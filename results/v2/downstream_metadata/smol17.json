@@ -1,0 +1,28 @@
+{
+  "model": "smol17",
+  "revision": "31b70e2e869a7173562077fd711b654946d38674",
+  "tokens_per_text": 1024,
+  "texts": [
+    "alice",
+    "pride",
+    "moby"
+  ],
+  "variants": [
+    "bf16",
+    "tile",
+    "rotate",
+    "smooth_k",
+    "rotate_smooth_k",
+    "smooth_kq"
+  ],
+  "vocabulary": 49152,
+  "vocabulary_chunk": 1024,
+  "torch": "2.10.0+cpu",
+  "device": "cpu",
+  "weights_and_hidden": "bf16",
+  "projection": "Native BF16 linear, then FP32 logits.",
+  "metric_reduction": "FP64 full-vocabulary logsumexp and KL(BF16 || variant).",
+  "attention_reference": "Unmodified native Transformers SDPA BF16 attention.",
+  "evaluation": "Batch teacher forcing with raw text, no chat template, and reset context.",
+  "limitation": "Full-K centering and current-block scale calibration can depend on later tokens in the batch. Not streaming-decoder perplexity or generation."
+}

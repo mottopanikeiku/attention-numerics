@@ -71,3 +71,20 @@ The actual runtime, checks, and scoped native/fast/storage validation records ar
 under [`results/v2/`](../results/v2/). The prediction code and thresholds remain
 those published in [f756745](https://github.com/mottopanikeiku/attention-numerics/commit/f756745)
 before untouched evaluation inputs were loaded.
+
+### Final numerical-claims audit
+
+After all six models finished, a cold reader independently recomputed the
+README's quantities from CSV/JSON. It confirmed 8,640 unique matched head/text
+rows, all 2,880 physical heads, every pinned layer/head/text identity, and the
+designated 1,728-head untouched split. The audit checked all headline risk
+statistics, physical-head rotation-gain R² versus pooled transformation-gain
+R², Qwen-only calibration, every downstream ΔCE/KL cell, token-weighted expCE
+ratios, validation counts, and the undefined AUC/recall for OLMo's zero positives.
+This was independent data arithmetic, not a rerun of the model experiments.
+
+One publication defect was corrected: the compressed README had described
+actual harm using predicted errors. It now states that **observed** rotated
+log-error exceeding tile log-error defines the label, while the classifier uses
+predicted counterparts. The distinction matters: the untouched group contains
+132 observed-positive heads and 143 predicted-positive heads.

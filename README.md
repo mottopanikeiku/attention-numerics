@@ -1,76 +1,81 @@
 # attention-numerics
 
-This is a NumPy emulation of rounding error in tiled BF16 and FP8 attention, **not a measurement on GPU hardware**.
+This is a CPU study of when FP8 attention's shared Q/K rotation helps—or hurts—real language-model heads.
 
-**Question:** How much error comes from low-precision inputs and accumulation, how does context length change it, and which fixes help?
+**Question:** Can quantization-noise statistics predict the rare heads rotation harms, and does the choice matter to whole-model loss?
 
-[attention.py](attention.py) models conversion, accumulation and online softmax; [sweep.py](sweep.py) compares it with an independent chunked float64 reference. [diagnosis.py](diagnosis.py) separates score-driven attention changes from later rounding. The algorithms build on FlashAttention, SageAttention and the quantization papers below; implementation code is original.
+[study/prediction.py](study/prediction.py) predicts output error; [study/attention.py](study/attention.py) implements tiled E4M3 with FA3/Sage-inspired transformations; [study/stream.py](study/stream.py) streams native BF16 layers. Original code, **not GPU kernels**.
 
-**Result:** Rotation can make a shared component harmful. Key-mean subtraction helps the captured failure, but does not completely repair it.
+**Result:** On three untouched models, the parameter-free rotation-risk score reaches **AUC 0.978**, **88.17% balanced accuracy**, and **96.12% accuracy versus a 92.36% majority baseline**. Rotation nevertheless raises Qwen0.5's batch CE from **2.994 to 3.641**. [Risk](results/v2/rotation_risk.json), [loss](results/v2/summary.json).
 
-## On actual model operands
+## Predicting rotation harm
 
-Pinned Qwen2.5-0.5B-Instruct, BF16 post-RoPE Q/K/V, one public-domain text, **1024 causal tokens, every query row**. Relative Frobenius error in percent; column labels are zero-based layer/head. [Capture and licenses](data/NOTICE), [raw results](results/diagnosis.csv).
+**Six checkpoints, four families, all 2,880 heads/every layer**; three public-domain texts, **1,024 causal tokens** each. [Pins](data/v2/models.json), [attributed texts](data/v2/texts.json), [head errors/features](results/v2/heads.csv).
 
-| E4M3 condition | 0/0 | 0/7 | 12/0 | 12/7 |
-|---|---:|---:|---:|---:|
-| Tensor scale | 23.59 | 20.19 | 7.22 | 10.59 |
-| Tile scale | 23.65 | 21.17 | 4.91 | 10.16 |
-| Tile + rotation | 117.07 | 73.25 | 3.98 | 8.04 |
-| Smooth K + tile | 5.49 | 11.96 | 5.42 | 6.78 |
-| Smooth K + tile + rotation | 44.88 | 27.32 | 3.58 | 7.15 |
+Predictions were fixed in [f756745](https://github.com/mottopanikeiku/attention-numerics/commit/f756745) **before evaluation**. Qwen0.5 and Smol360 are development models; Qwen0.5/Qwen1.5 fit the separately reported affine calibration. Smol1.7, TinyLlama and OLMo were untouched until the prediction code, zero threshold and model list were published. [Design](data/v2/design.json).
 
-“Smooth K” subtracts its token-mean vector before quantization. Q is **not** centered: that requires a key-dependent correction, as in SageAttention2.
+Each head averages three text-level `log1p(relative Frobenius error)` values. Observed harm means rotated log-error exceeds tile; the classifier uses predicted counterparts. Untouched rotation gain has **Spearman 0.902 / R² 0.760**, **72.73% precision / 78.79% recall**, and **132 harmed heads / 1,728**. Observations are dependent. [Definitions and denominators](results/v2/rotation_risk.json).
 
-The two layer-0 reference output norms are **4.508 / 3.193**. At their worst rotated rows, normalized probability total variation is **0.988 / 0.982**, with different top keys: this really moves attention mass. TV is measured **before probability storage rounding**. [Norms, row indices, distributions and qualifications](docs/MODEL.md#rotation-diagnosis).
+| Model | Hurt % | Majority % | Balanced % | AUC | Precision % | Recall % |
+|---|---:|---:|---:|---:|---:|---:|
+| Qwen0.5 | 18.75 | 81.25 | 92.37 | .974 | 74.36 | 92.06 |
+| Qwen1.5 | 10.71 | 89.29 | 92.28 | .936 | 71.11 | 88.89 |
+| Smol360 | 3.96 | 96.04 | 88.06 | .954 | 53.57 | 78.95 |
+| Smol1.7 — test | 9.51 | 90.49 | 89.23 | .977 | 69.77 | 82.19 |
+| TinyLlama1.1 — test | 8.38 | 91.62 | 86.36 | .982 | 78.57 | 74.58 |
+| OLMo2-1B — test | 0 | 100 | — | — | 0 | — |
 
-The existing-tool baseline, PyTorch CPU SDPA/BF16, has **0.17375%** four-head median error versus **0.17378%** for the BF16 emulator, and wins on one individual head. [Same operands and mask](results/real.csv); not a GPU comparison.
+[Risk data](results/v2/rotation_risk.json). OLMo has no harmed heads: AUC/balanced accuracy/recall are undefined, with one false alarm.
 
-### Why rotation can fail
+![Every physical head: predicted versus observed gains](results/v2/prediction.svg)
 
-Layer-0 K stores 94.8–97.5% of its energy in the token mean. A shared key component shifts each query's logits equally and cancels in softmax. Rotation mixes that component with token-specific signal; rounding can then shift different keys differently. An exactly constant-channel control reproduces this: rotation raises median error from 4.65% to 40.77%, while it helps varying outliers (43.01% to 4.31%). Centering K reduces—but does not eliminate—the real failure. This supports the shared-component mechanism, not projection bias as the sole cause. FP8 already stores an exponent per value, so spreading outliers helps less predictably than on an integer grid.
+Untouched error-level **R² is 0.501**, **0.667 after Qwen-only calibration**, **Spearman 0.837**. Pooled three-transformation gain **R² is only 0.003**, not a general quality predictor. [Fit and failures](results/v2/fit.json).
 
-[Mean energies](results/means.csv); [matched controls](results/bias-controls.csv): channel value/multiplier 32, N=1024, d=64, causal, three seeds; V unchanged. Additive bias retaining channel variation is a separate control, not equivalent to an exactly constant channel.
+### Mechanism
 
-![Key smoothing and attention-mass displacement](results/diagnosis.svg)
+A common key component adds the same scalar to every allowed logit of a query and cancels in exact softmax. Quantization can turn it into key-dependent noise; an orthogonal rotation preserves exact dot products, not their rounded versions. The predictor contracts Q/K noise covariances with the ideal softmax/output Jacobian. It omits P/V/output rounding and higher-order softmax effects. “Smooth K” removes the key mean; “Smooth KQ” also centers query blocks with the required key-dependent correction. [Derivation and omissions](docs/V2_PREDICTION.md).
 
-## Does longer context alone dominate?
+![All heads and texts: errors by layer](results/v2/layers.svg)
 
-For Gaussian inputs, error changes little across 1k–64k keys. Constructed outliers matter more. Below: 64k keys, d=64, non-causal, **128 fixed query rows**, three-seed medians [min–max], percent. [Raw data](results/length.csv), [sampling](docs/MODEL.md).
+Harm is concentrated in layers 0/1/2 for the two harmed test models. Only **1/132** harmed test heads meets the fixed prefix-sink label: mean first-four-token mass ≥0.5 over queries 128–1023. This is a descriptive association, not a causal explanation. [Layer/sink counts](results/v2/rotation_risk.json), [raw masses](results/v2/sinks.csv).
 
-| Condition | Gaussian σ=1 | One Q/K/V channel ×8 |
-|---|---:|---:|
-| BF16 | 0.379 [0.362–0.384] | 2.50 [1.30–3.68] |
-| E4M3 tensor | 5.38 [5.22–5.43] | 36.3 [11.0–45.6] |
-| E4M3 tile | 5.42 [5.07–5.47] | 3.85 [3.28–4.02] |
-| E4M3 tile + rotation | 5.36 [5.17–5.42] | 8.25 [3.85–8.63] |
+## All-layer downstream effects
 
-A separate **all-65,536-query, one-seed** Gaussian check gives FP32 **0.0000914%**, BF16 **0.3794%**, E4M3 tensor **5.4585%**; global maxima and worst rows are in [full64.csv](results/full64.csv).
+Every attention layer is replaced; other computation remains native BF16. Cells below are **ΔCE / KL(BF16‖variant)** in nats/token; row labels give BF16 CE. Each model uses **3,072 matched next-token targets** from disjoint, reset-context text windows, without chat templates. **Batch teacher forcing**, not streaming-decoder perplexity: centering and block calibration can use later batch tokens. [Raw CE/expCE/full-vocabulary KL](results/v2/downstream.csv), [aggregates](results/v2/summary.json).
 
-Promotion helps [genuinely long reduced14 dot products](results/dots.csv), not the default 128-key-tile attention case. Compensation helps an [isolated denominator construction](results/denominator.csv), not generally total attention error.
+| Model (BF16 CE) | Tile | Rotate | Smooth K | Rotate + smooth K | Smooth KQ |
+|---|---:|---:|---:|---:|---:|
+| Qwen0.5 (2.994) | .0668/.0501 | .6467/.6106 | .0178/.0147 | .0589/.0493 | .0033/.0043 |
+| Qwen1.5 (2.411) | 1.7443/1.6360 | 1.9824/1.8970 | .0153/.0118 | .0035/.0058 | .0044/.0035 |
+| Smol360 (2.677) | .0103/.0142 | .0030/.0080 | .0090/.0103 | .0032/.0064 | .0009/.0035 |
+| Smol1.7 (1.833) | .0260/.0334 | .0124/.0203 | .0153/.0296 | .0141/.0182 | .0105/.0076 |
+| TinyLlama1.1 (2.312) | .0126/.0111 | .0025/.0047 | .0128/.0093 | .0009/.0044 | .0021/.0020 |
+| OLMo2-1B (2.108) | .0364/.0342 | .0016/.0090 | .0064/.0123 | .0008/.0048 | .0010/.0026 |
+
+Rotation helps most heads but can still worsen loss. Qwen0.5/Qwen1.5 rotated **expCE ratios are 1.91×/7.26×** versus BF16; smoothing nearly repairs them. [Token-weighted expCE](results/v2/summary.json).
+
+![All-layer batch CE, expCE and KL](results/v2/downstream.svg)
 
 ## Reproduce
 
-Committed data need CPU only, no model download, **$0 paid compute**:
+CPU, **$0 paid compute**; AMD Ryzen AI 5 PRO 340, Linux, bounded Torch threads/single-thread BLAS. **16.36 GB pinned weights**, plus captures; larger models load one decoder layer. Repeat until complete. [Runtime](results/v2/machine.json), [inputs](data/v2/models.json), [checks/reproduction](docs/REPRODUCE.md).
 
 ```sh
-uv sync --locked --python 3.13
-uv run pytest -q
-uv run python figures.py
+uv sync --locked --extra capture --python 3.13
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
+timeout 580 nice -n 19 uv run --extra capture python -m study.pipeline --model all --seconds 500
 ```
 
-Experiments used AMD Ryzen AI 5 PRO 340, Linux, single-thread BLAS. [Experiment versions](results/diagnosis.json), [exact sweeps, diagnosis and capture commands](docs/REPRODUCE.md).
+## Limits and checks
 
-## Limits
-
-- Explicit rounding surrogate, not bit-exact H800 or a FlashAttention/SageAttention reproduction.
-- Synthetic data and one small model, four heads, one text; no downstream quality evaluation.
-- Long-context sampling is not a global worst-case bound; full64 covers one seed/setting.
-- Three-seed ranges are not confidence intervals. Prefix captures are correlated.
-- Full-K batch centering is not streaming; no GPU accuracy or speed claim.
+- Uniform E4M3 CPU surrogate, not FA3/Sage hardware arithmetic or GPU accuracy/speed.
+- Small model/text collection; correlated heads and repeated texts; no confidence claims or pretraining-exclusion guarantee.
+- Predictor needs ideal reference attention: a diagnostic, not a cheap runtime selector.
+- Batch calibration is not streaming/generation; local head error does not establish which heads cause downstream loss.
+- Full native parity tested on small Qwen; architecture tests use real tiny models. [Validation](results/v2/validation/): **180 captured-head cases** versus the independent emulator (maximum relative difference **0.0122%**); **all 65,536 BF16 patterns**, **zero raw/saturating E4M3FN byte mismatches** on CPU Torch.
 
 ## Prior work
 
-[FlashAttention](https://arxiv.org/abs/2205.14135), [FA2](https://arxiv.org/abs/2307.08691), [FA3](https://arxiv.org/abs/2407.08608); [SageAttention, ICLR 2025, §4.2](https://arxiv.org/html/2410.02367v9#S4.SS2); [SageAttention2, ICML 2025, §3.1–3.4](https://arxiv.org/html/2411.10958v7#S3.SS1); [FP8 Formats](https://arxiv.org/abs/2209.05433), [DeepSeek-V3 §3.3.2/§3.5.2](https://arxiv.org/html/2412.19437v2#S3.SS3.SSS2), [QuaRot](https://arxiv.org/abs/2404.00456). [Precise attribution and quotations](docs/PRIOR_WORK.md); [cold review](docs/REVIEW.md).
+[FA3 §3.3](https://arxiv.org/html/2407.08608v1#S3.SS3), [SageAttention §4.2](https://arxiv.org/html/2410.02367v9#S4.SS2), [SageAttention2 §3.1](https://arxiv.org/html/2411.10958v7#S3.SS1), [QuaRot](https://arxiv.org/abs/2404.00456), [SmoothQuant](https://arxiv.org/abs/2211.10438), and the sink/outlier literature. [Detailed comparison and primary-source citations](docs/PRIOR_WORK.md); [cold reviews](docs/REVIEW.md). Earlier synthetic context/accumulation studies and matched shared-component controls remain under [`results/`](results/) and [MODEL.md](docs/MODEL.md).
 
 Written with AI coding assistance.

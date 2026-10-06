@@ -749,5 +749,5 @@
   "within_weight_limit": true,
   "total_evidence": "INFERENCE: sum of requested safetensors sibling byte sizes",
   "download_policy": "Only root-level safetensors and listed configuration/tokenizer assets; no ONNX, training artifacts, alternate weight formats, or subdirectories.",
-  "hash_policy": "Weight SHA256 values are upstream LFS object IDs, not local download verification. Null metadata SHA256 means not obtained; git_blob_sha1 still pins content. Parent must verify downloaded bytes before use."
+  "hash_policy": "Weight SHA256 values pin upstream LFS objects; downloads verify bytes before use and record local checks under results/v2/downloads. Null metadata SHA256 means not obtained; git_blob_sha1 still pins and verifies the small asset's content."
 }
