@@ -2,6 +2,12 @@
 
 `attention.py` emulates one attention head on a CPU. It does **not** execute CUDA, measure GPU error, predict a particular GPU bit pattern, or reproduce a complete FlashAttention-3 kernel. The input generator produces float32 arrays; the reference treats these exact arrays as its input. There is no BF16 pre-rounding hidden in the FP8 synthetic conditions.
 
+## Optional key smoothing
+
+`Config(smooth_k=True)` subtracts K's per-channel mean over **all key tokens**, before optional rotation and storage conversion. The mean and subtraction are computed in float64, and centered K is then converted to float32. Q and V are not centered. For a constant vector μ, `q_i · (k_j − μ) = q_i · k_j − q_i · μ`: every allowed key logit for query i receives the same shift, so softmax is unchanged in real arithmetic, including under a causal mask. A test checks the independent float64 reference before/after centering, and FP32 tests bound preprocessing roundoff. Naively centering Q is not invariant and is not part of this option.
+
+This is batch preprocessing using the full K array, including future keys in a causal batch. The exact shift is still softmax-invariant, but approximate quantization can depend on that batch mean; this is **not** a streaming implementation or a measured speed improvement. The smoothing attribution and distinction from SageAttention2's corrected Q smoothing are in [PRIOR_WORK.md](PRIOR_WORK.md).
+
 ## Storage, products, and accumulators
 
 1. Optional Q/K rotation applies the same fixed-seed random signs and normalized Walsh–Hadamard butterflies in float32. In real arithmetic `(QR)(KR)^T = QK^T`. V is not rotated. Rotation has its own float32 error, tested separately from quantization.
@@ -42,3 +48,59 @@ Main sweeps evaluate **all query rows at N=1024**. At N=4096, 16384, and 65536 t
 Metrics: max absolute element error, `||output-reference||_F / ||reference||_F`, original query index with largest row L2 error, and that error. A zero reference norm produces a null relative metric, not a made-up denominator. “Worst row” and “max” refer only to evaluated rows when sampling is used. The summary reports medians and ranges over independent input seeds; this is input variability, not repeated timing variability. No timings are reported.
 
 The sweep is deliberately not a full Cartesian product. `sweep.py::study_cases` gives exact combinations: lengths and input distributions, separate fix ablations, tile sizes, softmax scales, and full-row checks. Results metadata records versions, commands and thread settings. Real model captures are a separate dataset and never represented as synthetic results.
+
+## Rotation diagnosis
+
+`diagnosis.py` evaluates all 1024 causal rows of each committed Qwen head, preserving the original-operand float64 reference across all five E4M3 variants. It also measures the original Q/K energy in the all-token mean: `N * ||mean(X)||_2² / ||X||_F²`. These are descriptive statistics, not an attribution of the means to one architectural parameter.
+
+| Layer / query head | Q mean energy | K mean energy | Reference output Frobenius norm |
+|---|---:|---:|---:|
+| 0 / 0 | 19.4266% | 97.4710% | 4.507749 |
+| 0 / 7 | 60.4716% | 94.8067% | 3.192995 |
+| 12 / 0 | 44.6994% | 59.4170% | 165.598905 |
+| 12 / 7 | 77.0569% | 50.7188% | 66.973508 |
+
+Source: [means.csv](../results/means.csv). Header-only inspection of the pinned cached checkpoint confirms Q/K/V projection bias tensors in both captured layers, recorded in [diagnosis.json](../results/diagnosis.json). That inspection did not reload the model or recheck the full checkpoint hash, and does not establish that projection bias alone causes the post-RoPE means.
+
+### Attention-mass movement, not just a relative-error denominator
+
+The diagnostic reconstructs the emulator's QK logits using the same packed operands, natural query/key GEMM shapes, accumulation and float32 scale operations. It normalizes both these logits and the original float64 logits with stable **float64 softmax before probability storage conversion**. Total variation is `0.5 * sum(abs(p_emulated - p_reference))`, between normalized distributions. It isolates score-driven mass movement; it is **not** TV of the final rounded, potentially non-normalized P coefficients or a reconstruction of every online-softmax rounding step.
+
+For the original tile-plus-rotation condition:
+
+| Layer / head | Mean TV | Worst output row | TV there | Reference row L2 | Row error L2 | Top key: reference → approximate |
+|---|---:|---:|---:|---:|---:|---:|
+| 0 / 0 | 0.899519 | 572 | 0.988045 | 0.137486 | 0.381958 | 570 → 551 |
+| 0 / 7 | 0.473372 | 213 | 0.981962 | 0.143988 | 0.297225 | 164 → 29 |
+| 12 / 0 | 0.022308 | 238 | 0.083865 | 8.514739 | 0.798539 | 238 → 238 |
+| 12 / 7 | 0.052176 | 421 | 0.130546 | 3.587868 | 0.597564 | 419 → 420 |
+
+Source: [diagnosis.csv](../results/diagnosis.csv); per-query TV and output-error arrays are retained in its JSON companion. Layer-0 reference norms are smaller than layer-12 norms, but the failures also move almost all probability mass at the worst rows. They are not merely a divide-by-zero artifact.
+
+Using probabilities from the approximate logits with **original V**, in float64, gives layer-0 relative errors of **117.3171% / 73.2477%**, versus full-emulation **117.0663% / 73.2544%**. Thus most of this failure is already present before P/V storage conversion. Full-minus-score-only residual norms are **3.4135% / 2.7540%** of the reference norm; these include P/V/output rounding and online recurrence and are **not an additive decomposition** of the total error.
+
+### What key smoothing repairs
+
+Key smoothing changes neither the original reference nor Q. On layer 0, unrotated tile errors fall from **23.6521% / 21.1675%** to **5.4869% / 11.9612%**. Rotated errors fall from **117.0663% / 73.2544%** to **44.8814% / 27.3203%**; mean TV falls to **0.379685 / 0.159246**, but smoothing does not make rotation preferable. On layer 12, rotation helps before smoothing; smoothing modestly improves the rotated errors further to **3.5844% / 7.1503%**. Smoothing alone slightly worsens head 0 (**4.9085% → 5.4242%**), so it is not an unconditional improvement. See [diagnosis.svg](../results/diagnosis.svg).
+
+### Matched synthetic controls
+
+For each seed 0/1/2, draw standard-normal float32 Q/K/V at N=1024, d=64. Keep all V and the other Q/K channels identical across constructions. In channel 0 of both Q and K:
+
+- **Constant channel:** replace every token's value by B. This contributes only a common logit shift.
+- **Additive bias:** add B to the original varying channel. Genuine bias-times-variation logits remain; this is not the same control as an exactly constant channel.
+- **Varying outlier:** multiply the original channel by B.
+
+Run B=8/32, causal attention, all query rows, and four tile-based variants. Every construction retains its own original float64 reference. These constructions are not variance-matched equivalents.
+
+At B=32, relative-error medians [observed min–max] across three seeds are:
+
+| Construction | Tile | Tile + rotation | Smooth K + tile | Smooth K + tile + rotation |
+|---|---:|---:|---:|---:|
+| Constant channel | 4.65 [4.46–4.70]% | 40.77 [39.11–48.85]% | 4.58 [4.47–4.68]% | 14.52 [13.99–14.56]% |
+| Additive bias | 90.51 [64.21–91.78]% | 36.76 [19.65–39.35]% | 18.90 [16.37–23.60]% | 9.71 [9.52–11.14]% |
+| Varying outlier | 43.01 [15.56–58.07]% | 4.31 [4.30–4.31]% | 30.01 [9.65–37.36]% | 4.59 [4.23–4.62]% |
+
+Source: [bias-controls.csv](../results/bias-controls.csv), with both levels in [bias-controls.svg](../results/bias-controls.svg). Seed ranges are not confidence intervals.
+
+**Qualified conclusion:** The exact-constant control demonstrates that rotation can turn a harmless shared component into harmful key-dependent rounding; the varying-outlier control shows the opposite sign. Together with the real K energy and centering intervention, this supports a shared-component contributor to the captured failure. It does not show that high mean energy is sufficient, that every channel bias behaves identically, or that projection bias alone is the cause. Substantial rotated error remains after key centering. FP8's per-element exponent also makes outlier-spreading less uniformly beneficial than for a scaled integer grid.

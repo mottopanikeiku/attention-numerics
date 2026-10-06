@@ -22,6 +22,8 @@ LABELS = {
     "e5_tensor": "E5M2 / tensor",
     "e4_tile": "E4M3 / tile",
     "e4_rotate": "E4M3 / tile + rotation",
+    "e4_smooth_tile": "smooth K / tile",
+    "e4_smooth_rotate": "smooth K / tile + rotation",
     "e4_reduced": "reduced14",
     "e4_promoted": "promote 128",
     "e4_compensated": "denominator Kahan",
@@ -222,6 +224,91 @@ def real_plot(rows):
     save(fig, "real.svg")
 
 
+def diagnosis_plot(rows):
+    variants = ["e4_tensor", "e4_tile", "e4_rotate", "e4_smooth_tile", "e4_smooth_rotate"]
+    names = ["tensor", "tile", "tile + rotation", "smooth K + tile", "smooth K + tile + rotation"]
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.5))
+    for offset, (layer, head) in enumerate([(0, 0), (0, 7), (12, 0), (12, 7)]):
+        subset = select(rows, layer=layer, head=head)
+        for ax, metric, percent in [
+            (axes[0], "relative_frobenius", True),
+            (axes[1], "tv_mean", False),
+        ]:
+            values = [
+                statistic(select(subset, variant=name), metric, percent)[0] for name in variants
+            ]
+            ax.plot(
+                np.arange(len(variants)),
+                values,
+                "o-",
+                color=COLORS[offset],
+                label=f"layer {layer}, head {head}",
+            )
+    for ax in axes:
+        ax.set_xticks(np.arange(len(variants)), names, rotation=22, ha="right")
+        ax.grid(alpha=0.2)
+    axes[0].set_yscale("log")
+    axes[0].set_ylabel("Output relative Frobenius error (%)")
+    axes[1].set_ylabel("Mean probability total variation (0–1)")
+    axes[1].set_ylim(0, 1)
+    fig.legend(
+        *axes[0].get_legend_handles_labels(),
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.05),
+        ncol=4,
+        fontsize=9,
+    )
+    fig.suptitle("Key centering only partly repairs layer-0 rotation errors", y=1.13)
+    fig.text(
+        0.5,
+        -0.17,
+        "1024 causal tokens, every row; TV is normalized BEFORE P storage rounding",
+        ha="center",
+        fontsize=9,
+    )
+    save(fig, "diagnosis.svg")
+
+
+def controls_plot(rows):
+    variants = ["e4_tile", "e4_rotate", "e4_smooth_tile", "e4_smooth_rotate"]
+    scenarios = [
+        ("constant_channel", "Exactly constant channel"),
+        ("additive_bias", "Additive bias: variation retained"),
+        ("multiplicative_outlier", "Token-varying outlier"),
+    ]
+    fig, axes = plt.subplots(1, 3, figsize=(12, 4), sharey=True)
+    for ax, (scenario, title) in zip(axes, scenarios, strict=True):
+        subset = select(rows, scenario=scenario)
+        for offset, variant in enumerate(variants):
+            summaries = [
+                statistic(select(subset, level=level, variant=variant)) for level in [8, 32]
+            ]
+            medians, lower, upper = np.asarray(summaries).T
+            ax.plot([8, 32], medians, "o-", color=COLORS[offset], label=LABELS[variant])
+            ax.fill_between([8, 32], lower, upper, color=COLORS[offset], alpha=0.13)
+        ax.set_xticks([8, 32])
+        ax.set_xlabel("Channel value / bias / multiplier")
+        ax.set_title(title, fontsize=10)
+        ax.set_yscale("log")
+        ax.grid(alpha=0.2)
+    axes[0].set_ylabel("Relative Frobenius error (%)")
+    fig.legend(
+        *axes[0].get_legend_handles_labels(),
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.07),
+        ncol=4,
+        fontsize=8,
+    )
+    fig.text(
+        0.5,
+        -0.05,
+        "Other Q/K channels and V matched · 1024 causal rows · seed medians/min–max, not CIs",
+        ha="center",
+        fontsize=9,
+    )
+    save(fig, "bias-controls.svg")
+
+
 def summarize(studies):
     entries = []
     keys = [
@@ -296,5 +383,7 @@ if __name__ == "__main__":
         studies.append(load(study))
     dot_plot(load("dots"))
     real_plot(load("real"))
+    diagnosis_plot(load("diagnosis"))
+    controls_plot(load("bias-controls"))
     summarize(studies)
     (ROOT / "machine.json").write_text(json.dumps(environment(), indent=2) + "\n")

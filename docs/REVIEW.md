@@ -25,3 +25,13 @@ Five low-severity presentation findings were corrected, including one from the f
 A separate source cleanup gave dot-product, analytic-denominator and real-operand metadata their own correct reference descriptions instead of inheriting a generic attention description. No numerical CSV values were changed by these presentation corrections.
 
 See [MODEL.md](MODEL.md) for the rounding assumptions and [REPRODUCE.md](REPRODUCE.md) for the test and experiment commands. Passing these reviews does not make this a bit-exact H800 model or a FlashAttention-3 reproduction.
+
+## Follow-up: key smoothing and rotation diagnosis
+
+Two fresh independent read-only reviews on the same prescribed model covered the smoothing implementation, diagnostic logits/TV, new raw data, SageAttention citations and revised README. Neither reviewer ran tests, experiments, builds or model loads.
+
+The numerical review identified one P2 precision-boundary defect: an original float64 K was converted to float32 before the documented float64 centering. The implementation now preserves original K until centering, then converts the centered result. A regression uses `K = 2^30 + [1, 3]`, whose variation would otherwise disappear, checking packed centered keys and the end-to-end independent reference. A focused static recheck passed. This correction does not change the recorded float32 captured/synthetic experiment arithmetic.
+
+The claims review checked every captured table entry, mean-energy fraction, reference norm, worst-row TV/key change and synthetic median/range against the raw records. It independently confirmed the pinned SageAttention §4.2 Eq. (6) and SageAttention2 §3.1–3.4 citations. It judged the explanation appropriately qualified: evidence for a shared-component contributor, not projection bias as the sole cause.
+
+Two P3 presentation/provenance findings were corrected: the diagnostic figure's footer was moved clear of its tick labels, and the README's experiment-version link now points to recorded numerical-run metadata rather than the regenerable rendering environment. [REPRODUCE.md](REPRODUCE.md) explicitly distinguishes the two. The reviewed README meets the total/opening/mechanism limits, and the exact-constant, additive-bias and varying-outlier controls remain separate.

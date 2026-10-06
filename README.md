@@ -4,67 +4,73 @@ This is a NumPy emulation of rounding error in tiled BF16 and FP8 attention, **n
 
 **Question:** How much error comes from low-precision inputs and accumulation, how does context length change it, and which fixes help?
 
-[attention.py](attention.py) models storage conversion, 32-product reductions, a shared-exponent reduced14 accumulator, online softmax, probability conversion and output rounding. [sweep.py](sweep.py) compares it to an independent, two-pass chunked float64 reference; [figures.py](figures.py) makes the tables and SVGs. The algorithms build on FlashAttention and the quantization papers linked below; implementation code is original.
+[attention.py](attention.py) models conversion, accumulation and online softmax; [sweep.py](sweep.py) compares it with an independent chunked float64 reference. [diagnosis.py](diagnosis.py) separates score-driven attention changes from later rounding. The algorithms build on FlashAttention, SageAttention and the quantization papers below; implementation code is original.
 
-**Result:** Input distribution mattered more than longer context. Tile scaling helped the constructed outlier case; Hadamard rotation did **not** reliably improve it.
+**Result:** Rotation can make a shared component harmful. Key-mean subtraction helps the captured failure, but does not completely repair it.
 
-## How large?
+## On actual model operands
 
-Relative Frobenius error, **percent**, at 65,536 keys, d=64, non-causal; medians [min–max] over three input seeds. These are **128 evaluated query rows**, not a whole-matrix worst-case bound. All rows are evaluated at 1,024 tokens; a separate 4,096-token run checks all rows. [Raw data](results/length.csv), [summary table](results/table.csv), [exact model and sampling](docs/MODEL.md).
+Pinned Qwen2.5-0.5B-Instruct, BF16 post-RoPE Q/K/V, one public-domain text, **1024 causal tokens, every query row**. Relative Frobenius error in percent; column labels are zero-based layer/head. [Capture and licenses](data/NOTICE), [raw results](results/diagnosis.csv).
 
-| Emulated condition | Gaussian σ=1 | One Q/K/V channel ×8 |
+| E4M3 condition | 0/0 | 0/7 | 12/0 | 12/7 |
+|---|---:|---:|---:|---:|
+| Tensor scale | 23.59 | 20.19 | 7.22 | 10.59 |
+| Tile scale | 23.65 | 21.17 | 4.91 | 10.16 |
+| Tile + rotation | 117.07 | 73.25 | 3.98 | 8.04 |
+| Smooth K + tile | 5.49 | 11.96 | 5.42 | 6.78 |
+| Smooth K + tile + rotation | 44.88 | 27.32 | 3.58 | 7.15 |
+
+“Smooth K” subtracts its token-mean vector before quantization. Q is **not** centered: that requires a key-dependent correction, as in SageAttention2.
+
+The two layer-0 reference output norms are **4.508 / 3.193**. At their worst rotated rows, normalized probability total variation is **0.988 / 0.982**, with different top keys: this really moves attention mass. TV is measured **before probability storage rounding**. [Norms, row indices, distributions and qualifications](docs/MODEL.md#rotation-diagnosis).
+
+The existing-tool baseline, PyTorch CPU SDPA/BF16, has **0.17375%** four-head median error versus **0.17378%** for the BF16 emulator, and wins on one individual head. [Same operands and mask](results/real.csv); not a GPU comparison.
+
+### Why rotation can fail
+
+Layer-0 K stores 94.8–97.5% of its energy in the token mean. A shared key component shifts each query's logits equally and cancels in softmax. Rotation mixes that component with token-specific signal; rounding can then shift different keys differently. An exactly constant-channel control reproduces this: rotation raises median error from 4.65% to 40.77%, while it helps varying outliers (43.01% to 4.31%). Centering K reduces—but does not eliminate—the real failure. This supports the shared-component mechanism, not projection bias as the sole cause. FP8 already stores an exponent per value, so spreading outliers helps less predictably than on an integer grid.
+
+[Mean energies](results/means.csv); [matched controls](results/bias-controls.csv): channel value/multiplier 32, N=1024, d=64, causal, three seeds; V unchanged. Additive bias retaining channel variation is a separate control, not equivalent to an exactly constant channel.
+
+![Key smoothing and attention-mass displacement](results/diagnosis.svg)
+
+## Does longer context alone dominate?
+
+For Gaussian inputs, error changes little across 1k–64k keys. Constructed outliers matter more. Below: 64k keys, d=64, non-causal, **128 fixed query rows**, three-seed medians [min–max], percent. [Raw data](results/length.csv), [sampling](docs/MODEL.md).
+
+| Condition | Gaussian σ=1 | One Q/K/V channel ×8 |
 |---|---:|---:|
-| FP32 | 0.000090 [0.000088–0.000093] | 0.000250 [0.000205–0.000391] |
 | BF16 | 0.379 [0.362–0.384] | 2.50 [1.30–3.68] |
-| E4M3, tensor scale | 5.38 [5.22–5.43] | 36.3 [11.0–45.6] |
-| E5M2, tensor scale | 10.5 [10.4–10.7] | 57.9 [38.7–68.0] |
-| E4M3, tile scale | 5.42 [5.07–5.47] | 3.85 [3.28–4.02] |
-| E4M3, tile + rotation | 5.36 [5.17–5.42] | 8.25 [3.85–8.63] |
+| E4M3 tensor | 5.38 [5.22–5.43] | 36.3 [11.0–45.6] |
+| E4M3 tile | 5.42 [5.07–5.47] | 3.85 [3.28–4.02] |
+| E4M3 tile + rotation | 5.36 [5.17–5.42] | 8.25 [3.85–8.63] |
 
-One additional run evaluated **all 65,536 queries**, without storing the score matrix: Gaussian σ=1, d=64, non-causal, seed 3. Worst row means largest row-L2 error ([data](results/full64.csv)).
+A separate **all-65,536-query, one-seed** Gaussian check gives FP32 **0.0000914%**, BF16 **0.3794%**, E4M3 tensor **5.4585%**; global maxima and worst rows are in [full64.csv](results/full64.csv).
 
-| Condition | Relative error (%) | Global max absolute error | Worst row |
-|---|---:|---:|---:|
-| FP32 | 0.0000914 | 7.27e-8 | 54076 |
-| BF16 | 0.379 | 2.35e-4 | 48647 |
-| E4M3/tensor | 5.46 | 2.57e-3 | 24060 |
-
-![Error versus context length](results/length.svg)
-
-The same E4M3 tensor-scaled setting gave 3.34%, 5.38% and 12.7% median error when Gaussian input standard deviation was 0.25, 1 and 2 ([data](results/length.csv)). Sharper logits make small score perturbations consequential. The outlier example is deliberately synthetic and its wide seed range matters.
-
-## Which fixes?
-
-For unit-Gaussian inputs at the **main sampled table's setting** (three seeds), FP32 probabilities reduced E4M3 error from **5.38% to 4.78%**; the local-max update gave 5.25%. Reduced14 gave 5.38%; denominator compensation and reverse traversal barely changed the total ([ablations](results/fixes.csv), [figure](results/fixes.svg)). Promotion is identical at a 128-term tile boundary. In a separate **65,536-term dot product**, promotion reduced arithmetic-only error from **4.69% to 0.00911%** ([data](results/dots.csv), [figure](results/dots.svg)). That inner reduction dimension is not the full N of tiled attention. [Tile-size results](results/tiles.svg) and a [denominator-only construction](results/denominator.csv) show why the distinction matters.
-
-## Actual model operands
-
-BF16 Q/K/V were captured from layers 0/12, two heads each, of **Qwen2.5-0.5B-Instruct** on 1,024 tokens of public-domain *Alice's Adventures in Wonderland*. **Causal attention uses all captured query rows.** Across these four heads, median error was **0.174% BF16, 15.4% E4M3/tensor, 15.7% E4M3/tile, and 40.6% tile + rotation**. Rotation ranged from 3.98% to 117%; its FP32 control stayed below 0.000734%. CPU PyTorch SDPA/BF16 was effectively tied at 0.174%, and won on layer 0/head 0 ([raw results](results/real.csv), [capture and hashes](data/qwen-qkv.json), [figure](results/real.svg)). This is one text, not a model-quality result or a reproduction of FlashAttention-3's hardware experiment.
+Promotion helps [genuinely long reduced14 dot products](results/dots.csv), not the default 128-key-tile attention case. Compensation helps an [isolated denominator construction](results/denominator.csv), not generally total attention error.
 
 ## Reproduce
 
-CPU only, $0 paid compute. Runs used an AMD Ryzen AI 5 PRO 340 with one BLAS thread; versions and commands are in the result JSON files. No speed measurements are claimed. On the shared workstation, prefix each sweep with `pp-run heavy`; each study is a separate invocation.
+Committed data need CPU only, no model download, **$0 paid compute**:
 
 ```sh
-uv sync --locked
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 uv run python sweep.py --study length
+uv sync --locked --python 3.13
+uv run pytest -q
 uv run python figures.py
 ```
 
-The final command regenerates figures from the committed CSVs. [All studies and real-operand reproduction](docs/REPRODUCE.md); tests: `uv run pytest -q`.
+Experiments used AMD Ryzen AI 5 PRO 340, Linux, single-thread BLAS. [Experiment versions](results/diagnosis.json), [exact sweeps, diagnosis and capture commands](docs/REPRODUCE.md).
 
 ## Limits
 
-- Reduced14 is a documented surrogate, **not bit-exact H800 emulation**; NumPy BLAS/FMA order and exponentials differ from GPU instructions.
-- BF16/FP8 output defaults to BF16; FP8 probabilities use a fixed scale. Different kernels may choose different rounding points.
-- Long-context maxima and worst-row indices refer only to the evaluated rows. Three seeds are not a confidence interval.
-- These are attention-output errors, not training stability, perplexity, latency or GPU performance. Real operands cover one short text and four heads.
-- Rotation uses one fixed random-sign seed; no choice was tuned against model quality.
+- Explicit rounding surrogate, not bit-exact H800 or a FlashAttention/SageAttention reproduction.
+- Synthetic data and one small model, four heads, one text; no downstream quality evaluation.
+- Long-context sampling is not a global worst-case bound; full64 covers one seed/setting.
+- Three-seed ranges are not confidence intervals. Prefix captures are correlated.
+- Full-K batch centering is not streaming; no GPU accuracy or speed claim.
 
 ## Prior work
 
-[FlashAttention (2022)](https://arxiv.org/abs/2205.14135), [FlashAttention-2 (2023)](https://arxiv.org/abs/2307.08691), [FlashAttention-3 (2024)](https://arxiv.org/abs/2407.08608), [Micikevicius et al., FP8 Formats (2022)](https://arxiv.org/abs/2209.05433), [DeepSeek-V3 §3.3.2/§3.5.2](https://arxiv.org/html/2412.19437v2#S3.SS3.SSS2), and [QuaRot (2024)](https://arxiv.org/abs/2404.00456). [Precise attribution and report quotations](docs/PRIOR_WORK.md).
-
-[Cold review and corrected findings](docs/REVIEW.md).
+[FlashAttention](https://arxiv.org/abs/2205.14135), [FA2](https://arxiv.org/abs/2307.08691), [FA3](https://arxiv.org/abs/2407.08608); [SageAttention, ICLR 2025, §4.2](https://arxiv.org/html/2410.02367v9#S4.SS2); [SageAttention2, ICML 2025, §3.1–3.4](https://arxiv.org/html/2411.10958v7#S3.SS1); [FP8 Formats](https://arxiv.org/abs/2209.05433), [DeepSeek-V3 §3.3.2/§3.5.2](https://arxiv.org/html/2412.19437v2#S3.SS3.SSS2), [QuaRot](https://arxiv.org/abs/2404.00456). [Precise attribution and quotations](docs/PRIOR_WORK.md); [cold review](docs/REVIEW.md).
 
 Written with AI coding assistance.
