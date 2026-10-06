@@ -5,7 +5,7 @@ Use Python 3.13 and `uv`. `uv.lock` pins library builds. Synthetic sweeps use a 
 ## Checks, exactly as CI
 
 ```
-uv sync --locked --python 3.13
+uv sync --locked --extra capture --python 3.13
 uv run ruff check .
 uv run ruff format --check .
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run pytest -q
@@ -73,6 +73,59 @@ nice -n 19 uv run python diagnosis.py --checkpoint-header "$HF_HOME/hub/models--
 That optional flag only inspects the cached safetensors header for bias tensor names/shapes; it does not load tensor contents or rehash the full checkpoint. Omit it if weights are not cached. It changes only the header-corroboration metadata, not the accuracy results. [MODEL.md](MODEL.md#rotation-diagnosis) defines normalized pre-probability-rounding TV and the score-only output comparison.
 
 Recorded checkpoint paths in `diagnosis.json` use the portable `$HF_HOME/hub/...` form. This path-label normalization leaves every numerical result, snapshot revision and file hash unchanged.
+
+## All-layer multi-model study
+
+[models.json](../data/v2/models.json) pins the six open checkpoints, their upstream
+file hashes, and architecture configurations. [texts.json](../data/v2/texts.json)
+attributes the three public-domain excerpts and pins their hashes. No checkpoint
+weights or large captures are committed.
+
+```sh
+uv sync --locked --extra capture --python 3.13
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
+nice -n 19 uv run --extra capture python -m study.pipeline --model all --seconds 500
+```
+
+Repeat the final command until its JSON reports `"complete": true`. Each invocation
+resumes completed layers from the working cache. Downloads use the normal Hugging
+Face cache; set `HF_HOME` if needed. Intermediate BF16 operands and hidden states
+use `~/.cache/attention-numerics`, or `ATTENTION_NUMERICS_CACHE` / `--work-dir`.
+Choose a fresh working directory to reproduce a changed checkpoint or input.
+The model loader keeps only one decoder layer in memory, including for the larger
+models; it does not construct a complete larger model.
+The seconds limit is checked between complete layers. A download, whole layer, or
+final vocabulary-scoring/plotting step can run past it; use `timeout` for a hard
+deadline, then resume. Capture manifests stay beside their hidden-state
+checkpoints and are republished on resume, including already-complete captures.
+
+The first 1,024 raw-text tokens supply native BF16 post-RoPE Q/K/V captures at every
+layer and query head, before GQA repetition. The next 1,025 tokens supply a disjoint
+1,024-label next-token batch. Both use no chat template and reset context. The
+baseline here is native Transformers **SDPA** BF16 attention, distinct from the
+earlier eager-attention capture above. Layerwise final hidden states feed native
+BF16 vocabulary projections; FP64 reductions cover the full vocabulary for CE and
+`KL(BF16 || variant)`. `expCE` is the exponential of token-weighted mean CE.
+Full-K centering and block scales may use later batch tokens: these are **batch
+teacher-forced measurements**, not streaming-decoder perplexity or generation.
+
+[design.json](../data/v2/design.json) lists development, calibration, and untouched
+evaluation models and fixes the zero-threshold rotation-harm rule and prefix-sink
+definition. Prediction code, thresholds, and model lists were published in
+[f756745](https://github.com/mottopanikeiku/attention-numerics/commit/f756745) before
+any untouched evaluation checkpoint was loaded. The error model and its omissions
+are derived in [V2_PREDICTION.md](V2_PREDICTION.md). The parameter-free rule uses
+Q/K quantization-error statistics and ideal attention sensitivity, not measured
+surrogate output errors; the separately reported affine calibration fits Qwen only.
+
+The pipeline writes raw head errors/features, sink measurements, downstream
+metrics, fitted summaries, classifier denominators, and figures under
+[`results/v2/`](../results/v2/). It also checks every BF16 storage pattern against
+CPU Torch E4M3FN conversion, validates the small streamed Qwen baseline against a
+full native model, and compares selected captured heads against the independent
+NumPy emulator. Cached checkpoints are verified against the pinned file hashes on
+initial download; a private revision marker avoids repeated whole-file hashing
+when resuming the same immutable snapshot. Delete that marker to repeat byte checks.
 
 ## Reading the results
 

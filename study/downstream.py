@@ -11,7 +11,7 @@ import torch
 
 from study.attention import VARIANTS
 from study.data import ROOT, model_spec, models, snapshot, texts, work_directory
-from study.run import load_state, token_arrays
+from study.run import atomic_json, load_state, token_arrays
 from study.stream import LayerStream
 
 FIELDS = ("model", "family", "revision", "text", "variant", "tokens", "ce", "exp_ce", "mean_kl")
@@ -111,14 +111,6 @@ def score(key, cache, results_dir=ROOT / "results/v2", vocab_chunk=1024):
                     "mean_kl": float(mean_kl[variant_index, book]),
                 }
             )
-    target = cache / key / "downstream/metrics.csv"
-    temporary = target.with_suffix(".tmp.csv")
-    with temporary.open("w", newline="") as output:
-        writer = csv.DictWriter(output, fieldnames=FIELDS)
-        writer.writeheader()
-        writer.writerows(records)
-    temporary.replace(target)
-    count = combine(cache, results_dir / "downstream.csv")
     metadata = {
         "model": key,
         "revision": spec["revision"],
@@ -139,10 +131,15 @@ def score(key, cache, results_dir=ROOT / "results/v2", vocab_chunk=1024):
             "in the batch. Not streaming-decoder perplexity or generation."
         ),
     }
-    (results_dir / "downstream_metadata").mkdir(parents=True, exist_ok=True)
-    (results_dir / "downstream_metadata" / f"{key}.json").write_text(
-        json.dumps(metadata, indent=2) + "\n"
-    )
+    atomic_json(results_dir / "downstream_metadata" / f"{key}.json", metadata)
+    target = cache / key / "downstream/metrics.csv"
+    temporary = target.with_suffix(".tmp.csv")
+    with temporary.open("w", newline="") as output:
+        writer = csv.DictWriter(output, fieldnames=FIELDS)
+        writer.writeheader()
+        writer.writerows(records)
+    temporary.replace(target)
+    count = combine(cache, results_dir / "downstream.csv")
     print(
         json.dumps(
             {

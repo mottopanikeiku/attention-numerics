@@ -147,3 +147,58 @@ def test_new_cache_does_not_inherit_prior_run_capture_entries(tiny_study):
     assert manifest["next_layer"] == 1
     assert len(manifest["files"]) == 3
     assert {record["layer"] for record in manifest["files"]} == {0}
+    resumed = run.capture("qwen05", cache, layers=1)
+    restored = json.loads((run.ROOT / "results/v2/captures/qwen05.json").read_text())
+    assert resumed["complete"] and resumed["new_layers"] == 0
+    assert restored["next_layer"] == 2 and len(restored["files"]) == 6
+    assert {record["layer"] for record in restored["files"]} == {0, 1}
+
+
+@pytest.mark.parametrize("destination", ("private", "public"))
+def test_capture_recovers_from_interrupted_manifest_publication(
+    tiny_study, monkeypatch, destination
+):
+    _, cache, _, _ = tiny_study
+    target = (
+        cache / "qwen05/capture/manifest.json"
+        if destination == "private"
+        else run.ROOT / "results/v2/captures/qwen05.json"
+    )
+    original = run.atomic_json
+
+    def interrupt(path, value):
+        if path == target:
+            raise RuntimeError("interrupted publication")
+        original(path, value)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(run, "atomic_json", interrupt)
+        with pytest.raises(RuntimeError, match="interrupted publication"):
+            run.capture("qwen05", cache, layers=1)
+    result = run.capture("qwen05", cache, layers=2)
+    manifest = json.loads((run.ROOT / "results/v2/captures/qwen05.json").read_text())
+    private = json.loads((cache / "qwen05/capture/manifest.json").read_text())
+    assert result["complete"] and manifest["complete"]
+    assert manifest == private
+    assert {(record["layer"], record["text"]) for record in manifest["files"]} == {
+        (layer, text) for layer in range(2) for text in ("alice", "pride", "moby")
+    }
+
+
+def test_score_commits_metadata_before_completion_marker(tiny_study, tmp_path, monkeypatch):
+    _, cache, _, _ = tiny_study
+    run.downstream("qwen05", cache, layers=2)
+    results = tmp_path / "scores"
+
+    def interrupt(path, value):
+        raise RuntimeError("interrupted metadata")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(likelihood, "atomic_json", interrupt)
+        with pytest.raises(RuntimeError, match="interrupted metadata"):
+            likelihood.score("qwen05", cache, results_dir=results, vocab_chunk=13)
+    assert not (cache / "qwen05/downstream/metrics.csv").exists()
+    likelihood.score("qwen05", cache, results_dir=results, vocab_chunk=13)
+    metadata = json.loads((results / "downstream_metadata/qwen05.json").read_text())
+    assert metadata["revision"] == "local-test" and metadata["tokens_per_text"] == 11
+    assert (cache / "qwen05/downstream/metrics.csv").exists()

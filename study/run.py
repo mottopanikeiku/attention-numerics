@@ -73,6 +73,7 @@ def capture(key, cache, layers=4, seconds=540):
     ensure_tokens(key, cache)
     stream = LayerStream(snapshot(key))
     state_path = cache / key / "capture/state.npz"
+    private_manifest = state_path.with_name("manifest.json")
     resuming = state_path.exists()
     if resuming:
         next_layer, _, states = load_state(state_path)
@@ -84,12 +85,10 @@ def capture(key, cache, layers=4, seconds=540):
     if stream.layer_count != spec["config"]["num_hidden_layers"]:
         raise ValueError("Pinned and loaded layer counts disagree")
     manifest_path = ROOT / "results/v2/captures" / f"{key}.json"
-    previous = (
-        json.loads(manifest_path.read_text())
-        if resuming and manifest_path.exists()
-        else {"files": []}
-    )
+    previous = json.loads(private_manifest.read_text()) if resuming else {"files": []}
     files = {(item["layer"], item["text"]): item for item in previous["files"]}
+    if resuming:
+        atomic_json(manifest_path, previous)
     completed = 0
     for index in range(next_layer, stream.layer_count):
         if completed >= layers or (completed and time.monotonic() - start >= seconds):
@@ -126,7 +125,6 @@ def capture(key, cache, layers=4, seconds=540):
             if not called:
                 raise ValueError("Native decoder did not invoke capture")
         next_layer = index + 1
-        save_state(state_path, next_layer, False, states)
         manifest = {
             "model": key,
             "model_id": spec["model_id"],
@@ -141,6 +139,8 @@ def capture(key, cache, layers=4, seconds=540):
             "attention_baseline": "Unmodified Transformers SDPA BF16 attention.",
             "storage": "External NPZ captures; manifest filenames are relative to work-dir.",
         }
+        atomic_json(private_manifest, manifest)
+        save_state(state_path, next_layer, False, states)
         atomic_json(manifest_path, manifest)
         completed += 1
         print(
