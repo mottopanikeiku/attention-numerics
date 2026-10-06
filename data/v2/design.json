@@ -1,0 +1,54 @@
+{
+  "decisions_fixed_at_utc": "2026-10-06T22:08:39Z",
+  "development_models": ["qwen05", "smol036"],
+  "calibration_family": "qwen",
+  "calibration_models": ["qwen05", "qwen15"],
+  "evaluation_models": ["smol17", "tiny11", "olmo1"],
+  "text_ids": ["alice", "pride", "moby"],
+  "evaluation_scope": "All layers and query heads. Evaluation-model operands and study outcomes have not been loaded or inspected before these choices. Public configurations and literature were known.",
+  "development_scope": "Qwen0.5 and Smol360 outputs were inspected during development. Smol360 is not an untouched test, even though it is outside the affine calibration family.",
+  "predictor": {
+    "features": "Exact full-pair, row-centered Q/K storage-noise second moment from covariance products; reference softmax-Jacobian/value sensitivity.",
+    "output": "Score-only first-order relative squared-Frobenius error; no measured FP8 output error used as a feature.",
+    "variants": ["tile", "rotate", "smooth_k", "rotate_smooth_k"],
+    "calibration": "One affine OLS map of log1p(relative Frobenius error), fit only Qwen-family rows; same slope/intercept for all variants and evaluation models."
+  },
+  "rotation_classifier": {
+    "observation": "One physical model/layer/query head, averaging the three text-level log errors.",
+    "observed_hurt_score": "mean_text(log1p(E_rotate) - log1p(E_tile))",
+    "predicted_hurt_score": "mean_text(log1p(E_rotate_predicted) - log1p(E_tile_predicted))",
+    "positive_label": "observed_hurt_score > 0",
+    "positive_prediction": "predicted_hurt_score > 0",
+    "threshold": 0,
+    "ties": "Exact observed ties are reported separately and are binary non-hurt. Exact predicted zero does not predict hurt.",
+    "metrics": ["hurt fraction", "majority-class accuracy", "accuracy", "balanced accuracy", "ROC AUC", "precision", "recall", "specificity", "confusion counts", "log-gain Spearman", "log-gain R2"],
+    "threshold_selection": "Fixed zero threshold; no sweep or test-guided tuning."
+  },
+  "prefix_sink_diagnostic": {
+    "probabilities": "Ideal causal FP64 probabilities from captured native BF16 post-RoPE Q/K.",
+    "query_start": 128,
+    "query_stop_exclusive": 1024,
+    "prefix_tokens": 4,
+    "physical_head_definition": "Mean prefix4 attention mass over query positions 128..1023 and the three texts >= 0.5.",
+    "threshold": 0.5,
+    "interpretation": "Operational prefix-concentration label, not a paper-defined permanent head identity or a causal explanation of downstream harm."
+  },
+  "attention": {
+    "reference": "Unmodified native Transformers SDPA BF16 attention.",
+    "fp8": "E4M3 Q/K/V and unnormalized probability storage; FP32 grouped32 products and online recurrence; BF16 output.",
+    "query_tile": 32,
+    "key_value_tile": 128,
+    "probability_scale": "1/448",
+    "sign_seed": 1729,
+    "rotation": "Shared row-vector Q/K diag(random signs) times normalized Hadamard; V unchanged. PCG64/order/seed are emulator choices, not uniquely prescribed by FA3."
+  },
+  "downstream": {
+    "variants": ["bf16", "tile", "rotate", "smooth_k", "rotate_smooth_k", "smooth_kq"],
+    "capture_token_interval": [0, 1024],
+    "heldout_token_interval": [1024, 2049],
+    "metrics": "1024 next-token labels per text; full-vocabulary CE, exp(CE), KL(BF16 || variant).",
+    "scope": "Raw-text batch teacher forcing, reset context, no chat template. Disjoint from capture/fit, not guaranteed excluded from model pretraining.",
+    "limitation": "Full-K centering and current-block scales can depend on later batch tokens; not streaming-decoder perplexity or generation."
+  },
+  "statistical_scope": "Descriptive held-out-model evaluation. Texts, layers and GQA-sharing heads are dependent; no independent-trial significance claim."
+}

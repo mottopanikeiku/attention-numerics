@@ -33,6 +33,8 @@ class Config:
     order: Literal["forward", "reverse"] = "forward"
     causal: bool = False
     scale: float | None = None
+    smooth_q: bool = False
+    sign_seed: int = 1729
 
     def __post_init__(self):
         if self.storage not in DTYPES or self.output not in DTYPES:
@@ -53,12 +55,34 @@ class Config:
             raise ValueError("softmax scale must be finite and positive")
 
 
+def raw_storage_cast(x, fmt: Format):
+    """Unsaturated storage cast; E4M3 NaNs retain the input sign, as on Torch CPU.
+
+    Unlike :func:`cast`, overflow and infinity become NaNs in E4M3. Return
+    storage values (not expanded floats) so byte-level comparisons are possible.
+    """
+    x = np.asarray(x, dtype=np.float32)
+    with np.errstate(over="ignore", invalid="ignore"):
+        stored = x.astype(DTYPES[fmt])
+    if fmt == "e4m3":
+        # ml_dtypes versions can canonicalize NaNs differently from Torch's
+        # sign-preserving 0x7f/0xff conversion. Finite rounding is unchanged.
+        bits = stored.view(np.uint8)
+        nan_bits = np.uint8(0x7F) | (np.signbit(x).astype(np.uint8) << 7)
+        stored = np.where(np.isnan(stored), nan_bits, bits).astype(np.uint8).view(DTYPES[fmt])
+    return stored
+
+
 def cast(x, fmt: Format):
-    """One storage conversion, with saturating FP8 round-to-nearest-even."""
+    """Explicit saturating FP8 round-to-nearest-even, then expand to float32.
+
+    Infinities saturate; NaNs preserve their sign in E4M3 storage. This policy
+    deliberately differs from an unsaturated CPU storage conversion.
+    """
     x = np.asarray(x, dtype=np.float32)
     if fmt in FP8_MAX:
         x = np.clip(x, -FP8_MAX[fmt], FP8_MAX[fmt])
-    return x.astype(DTYPES[fmt]).astype(np.float32)
+    return raw_storage_cast(x, fmt).astype(np.float32)
 
 
 def quantize(x, fmt: Format, block: int | None = None):
@@ -167,13 +191,36 @@ def center_keys(k):
     return k - np.mean(k, axis=0, dtype=np.float64)
 
 
-def quantize_qk(q, k, cfg):
-    """Shared Q/K preparation for attention and score-distribution diagnostics."""
+def _prepare_qk(q, k, cfg):
     q = np.asarray(q, dtype=np.float32)
     k = center_keys(k).astype(np.float32) if cfg.smooth_k else np.asarray(k, dtype=np.float32)
+    means = None
+    if cfg.smooth_q:
+        means = np.empty_like(q)
+        centered = np.empty_like(q)
+        for start in range(0, len(q), cfg.query_tile):
+            part = q[start : start + cfg.query_tile].astype(np.float64)
+            mean = np.mean(part, axis=0, dtype=np.float64)
+            means[start : start + len(part)] = mean
+            centered[start : start + len(part)] = part - mean
+        q = centered
     if cfg.rotate:
-        signs = np.random.default_rng(1729).choice([-1, 1], size=q.shape[1])
+        signs = np.random.default_rng(cfg.sign_seed).choice([-1, 1], size=q.shape[1])
         q, k = hadamard(q, signs), hadamard(k, signs)
+        if means is not None:
+            means = hadamard(means, signs)
+    return q, k, means
+
+
+def quantize_qk(q, k, cfg):
+    """Shared Q/K preparation; smooth_q uses a separate unquantized correction.
+
+    Key centering occurs before narrowing original float64 inputs. Rotation is
+    row-vector DH (random signs then normalized Hadamard), following FA3's
+    orthogonal Q/K incoherent processing. PCG64 and the seed are emulator choices,
+    not a reproduction of a particular GPU kernel's random-number generator.
+    """
+    q, k, _ = _prepare_qk(q, k, cfg)
     qblock = cfg.query_tile if cfg.scaling == "tile" else None
     kblock = cfg.tile if cfg.scaling == "tile" else None
     qs, qscale = quantize(q, cfg.storage, qblock)
@@ -194,6 +241,8 @@ def emulate(q, k, v, config=None, rows=None):
     q, v = (x.astype(np.float32) for x in (q, v))
     cfg = Config() if config is None else config
     qs, qscale, ks, kscale = quantize_qk(q, k, cfg)
+    if cfg.smooth_q:
+        _, correction_keys, query_means = _prepare_qk(q, k, cfg)
     kvblock = cfg.tile if cfg.scaling == "tile" else None
     vs, vscale = quantize(v, cfg.storage, kvblock)
     softmax_scale = np.float32(cfg.scale if cfg.scale is not None else q.shape[1] ** -0.5)
@@ -217,6 +266,10 @@ def emulate(q, k, v, config=None, rows=None):
             scores = matmul(qs[qr], ks[start:stop].T, cfg.accumulator, cfg.promote)
             # Q and K scales are constant inside each natural quantization block.
             scores *= qscale[qr, None] * kscale[None, start:stop]
+            if cfg.smooth_q:
+                # SageAttention2: restore the key-dependent mean-query term.
+                # Neither operand of this correction is packed to FP8.
+                scores += matmul(query_means[qr], correction_keys[start:stop].T)
             scores *= softmax_scale
             if cfg.causal:
                 scores = np.where(np.arange(start, stop)[None, :] <= qr[:, None], scores, -np.inf)

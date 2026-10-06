@@ -1,0 +1,98 @@
+{
+  "schema_version": 2,
+  "texts": [
+    {
+      "key": "alice",
+      "path": "data/v2/texts/alice.txt",
+      "author": "Lewis Carroll",
+      "title": "Alice's Adventures in Wonderland",
+      "source_url": "https://www.gutenberg.org/cache/epub/11/pg11.txt",
+      "catalog_url": "https://www.gutenberg.org/ebooks/11",
+      "public_domain": {
+        "jurisdiction": "USA",
+        "qualification": "Project Gutenberg catalog copyright field states public domain in the USA. Outside the USA, check local law before reuse.",
+        "source_url": "https://www.gutenberg.org/ebooks/11",
+        "claim_label": "EXT"
+      },
+      "extraction": {
+        "source_start_line": 62,
+        "source_end_line": 630,
+        "start_marker": "Alice was beginning to get very tired of sitting",
+        "end_marker": "         try the whole cause, and condemn you to death.’”",
+        "method": "Contiguous source body beginning at the first narrative paragraph; ends at an existing paragraph boundary nearest 5500 whitespace-separated words. Normalize CRLF/CR to LF and retain one final LF. No repeated text, generated padding, reflow, or omitted internal content.",
+        "claim_label": "MEAS"
+      },
+      "word_count": 5513,
+      "utf8_bytes": 30081,
+      "sha256": "982f9c1800d4718484c55acf1a525ecc241a552a85a8c3836b68e8b166485f5a",
+      "sha256_claim_label": "MEAS",
+      "token_count": "unknown; parent checks each pinned tokenizer before choosing capture and continuation windows"
+    },
+    {
+      "key": "pride",
+      "path": "data/v2/texts/pride.txt",
+      "author": "Jane Austen",
+      "title": "Pride and Prejudice",
+      "source_url": "https://www.gutenberg.org/cache/epub/1342/pg1342.txt",
+      "catalog_url": "https://www.gutenberg.org/ebooks/1342",
+      "public_domain": {
+        "jurisdiction": "USA",
+        "qualification": "Project Gutenberg catalog copyright field states public domain in the USA. Outside the USA, check local law before reuse.",
+        "source_url": "https://www.gutenberg.org/ebooks/1342",
+        "claim_label": "EXT"
+      },
+      "extraction": {
+        "source_start_line": 704,
+        "source_end_line": 1402,
+        "start_marker": "It is a truth universally acknowledged, that a single",
+        "end_marker": "[Illustration]",
+        "method": "Contiguous source body beginning at the first narrative paragraph; ends at an existing paragraph boundary nearest 5500 whitespace-separated words. Normalize CRLF/CR to LF and retain one final LF. No repeated text, generated padding, reflow, or omitted internal content.",
+        "claim_label": "MEAS"
+      },
+      "word_count": 5455,
+      "utf8_bytes": 31010,
+      "sha256": "dd9c352d0a380975e216e4921047ea4870f8aeba0d965977ce11fce9ef0e34ba",
+      "sha256_claim_label": "MEAS",
+      "token_count": "unknown; parent checks each pinned tokenizer before choosing capture and continuation windows"
+    },
+    {
+      "key": "moby",
+      "path": "data/v2/texts/moby.txt",
+      "author": "Herman Melville",
+      "title": "Moby Dick; Or, The Whale",
+      "source_url": "https://www.gutenberg.org/cache/epub/2701/pg2701.txt",
+      "catalog_url": "https://www.gutenberg.org/ebooks/2701",
+      "public_domain": {
+        "jurisdiction": "USA",
+        "qualification": "Project Gutenberg catalog copyright field states public domain in the USA. Outside the USA, check local law before reuse.",
+        "source_url": "https://www.gutenberg.org/ebooks/2701",
+        "claim_label": "EXT"
+      },
+      "extraction": {
+        "source_start_line": 846,
+        "source_end_line": 1366,
+        "start_marker": "Call me Ishmael. Some years ago",
+        "end_marker": "entrance of the seamen.",
+        "method": "Contiguous source body beginning at the first narrative paragraph; ends at an existing paragraph boundary nearest 5500 whitespace-separated words. Normalize CRLF/CR to LF and retain one final LF. No repeated text, generated padding, reflow, or omitted internal content.",
+        "claim_label": "MEAS"
+      },
+      "word_count": 5456,
+      "utf8_bytes": 31129,
+      "sha256": "ae6e27e0633aa25733adb12af19d3b7d1fd04ce32ce9c199426995b61901884e",
+      "sha256_claim_label": "MEAS",
+      "token_count": "unknown; parent checks each pinned tokenizer before choosing capture and continuation windows"
+    }
+  ],
+  "split_policy": {
+    "capture_tokens": 1024,
+    "continuation_tokens": 1025,
+    "disjoint": true,
+    "claim_label": "INFERENCE",
+    "status": "Planned windows; token counts and concrete offsets must be checked by the experiment runner for each model tokenizer."
+  },
+  "claim_labels": {
+    "EXT": "Attribution and USA public-domain status from opened Project Gutenberg sources.",
+    "MEAS": "Computed from exact UTF-8 bytes written to the excerpt files.",
+    "INFERENCE": "Planned evaluation split, not a measured token count."
+  }
+}
