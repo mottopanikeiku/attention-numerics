@@ -1,0 +1,48 @@
+{
+  "model": "qwen05",
+  "model_id": "Qwen/Qwen2.5-0.5B-Instruct",
+  "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "add_special_tokens": false,
+  "records": [
+    {
+      "text": "alice",
+      "sha256": "982f9c1800d4718484c55acf1a525ecc241a552a85a8c3836b68e8b166485f5a",
+      "tokens_available": 7483,
+      "capture_token_interval": [
+        0,
+        1024
+      ],
+      "heldout_token_interval": [
+        1024,
+        2049
+      ]
+    },
+    {
+      "text": "pride",
+      "sha256": "dd9c352d0a380975e216e4921047ea4870f8aeba0d965977ce11fce9ef0e34ba",
+      "tokens_available": 7534,
+      "capture_token_interval": [
+        0,
+        1024
+      ],
+      "heldout_token_interval": [
+        1024,
+        2049
+      ]
+    },
+    {
+      "text": "moby",
+      "sha256": "ae6e27e0633aa25733adb12af19d3b7d1fd04ce32ce9c199426995b61901884e",
+      "tokens_available": 7710,
+      "capture_token_interval": [
+        0,
+        1024
+      ],
+      "heldout_token_interval": [
+        1024,
+        2049
+      ]
+    }
+  ],
+  "heldout_scope": "Disjoint from capture/fit; no guarantee of exclusion from pretraining."
+}

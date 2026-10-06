@@ -1,0 +1,218 @@
+{
+  "model": "qwen05",
+  "model_id": "Qwen/Qwen2.5-0.5B-Instruct",
+  "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "text": "alice",
+  "tokens": 64,
+  "dtype": "bf16",
+  "device": "cpu",
+  "torch": "2.10.0+cpu",
+  "attention_implementation": "sdpa",
+  "checks": [
+    {
+      "stage": "embedding",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_0",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_1",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_2",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_3",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_4",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_5",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_6",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_7",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_8",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_9",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_10",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_11",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_12",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_13",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_14",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_15",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_16",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_17",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_18",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_19",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_20",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_21",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_22",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "layer_23",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "final_norm",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": true,
+      "elements": 57344
+    },
+    {
+      "stage": "logits_0_127",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": false,
+      "elements": 8128
+    },
+    {
+      "stage": "logits_500_691",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": false,
+      "elements": 12224
+    },
+    {
+      "stage": "logits_150000_151936",
+      "relative_fro": 0.0,
+      "max_abs": 0.0,
+      "bit_exact": false,
+      "elements": 123904
+    }
+  ],
+  "relative_fro_tolerance": 0.003,
+  "scope": "Native Transformers whole-model forward versus one-layer stream; no FP8."
+}

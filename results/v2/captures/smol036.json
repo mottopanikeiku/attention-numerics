@@ -1,0 +1,2223 @@
+{
+  "model": "smol036",
+  "model_id": "HuggingFaceTB/SmolLM2-360M-Instruct",
+  "revision": "a10cc1512eabd3dde888204e902eca88bddb4951",
+  "family": "smol",
+  "tokens": 1024,
+  "next_layer": 32,
+  "total_layers": 32,
+  "complete": true,
+  "files": [
+    {
+      "layer": 0,
+      "text": "alice",
+      "file": "smol036/capture/layer_00_alice.npz",
+      "sha256": "eea4fb7c0a0f70a958464063448dca290eb245cbefca03b643dd443897def9ad",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 0,
+      "text": "moby",
+      "file": "smol036/capture/layer_00_moby.npz",
+      "sha256": "02c90da90bdddcb6466a847496de2b6a20e992ffb221dfdf20e276d8d6c0f1c8",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 0,
+      "text": "pride",
+      "file": "smol036/capture/layer_00_pride.npz",
+      "sha256": "7a2fda427727533a21a7eb14e8b3e93ef9e5f0713eb289a76a757ee024609413",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 1,
+      "text": "alice",
+      "file": "smol036/capture/layer_01_alice.npz",
+      "sha256": "01703c79b1842cb793fc576289a947f9db265a5beabfa733cbb140237104903f",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 1,
+      "text": "moby",
+      "file": "smol036/capture/layer_01_moby.npz",
+      "sha256": "aeba7e678aeff34b4d618cd89ababea4dc9930f3cae31de98ac2242af32cf87d",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 1,
+      "text": "pride",
+      "file": "smol036/capture/layer_01_pride.npz",
+      "sha256": "416e46c128435f0cde7ed9b271126cae9a3d4e69929828e750abdd7da975cfbe",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 2,
+      "text": "alice",
+      "file": "smol036/capture/layer_02_alice.npz",
+      "sha256": "74a47bcb9f9c2f34f8ff3ffa01933278af953f3a9de120a8f0115116d9ebdf73",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 2,
+      "text": "moby",
+      "file": "smol036/capture/layer_02_moby.npz",
+      "sha256": "cf8292c6ec7fedec33df720eaf4440f61a2e9ebfa7c7d4276db72ab173e6ae23",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 2,
+      "text": "pride",
+      "file": "smol036/capture/layer_02_pride.npz",
+      "sha256": "51762bd1d2f9a9843b883be017cb9ca28857d670fdad40ba103452e1e13f1377",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 3,
+      "text": "alice",
+      "file": "smol036/capture/layer_03_alice.npz",
+      "sha256": "c498f10961a64b37d5b6184ec860e08e2671e7d9cb7d0209831becc7946f5da4",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 3,
+      "text": "moby",
+      "file": "smol036/capture/layer_03_moby.npz",
+      "sha256": "b66a8fc440d55e4eee8d501ccb7be4f1a84f96566086518b56eb5fafc8ce1583",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 3,
+      "text": "pride",
+      "file": "smol036/capture/layer_03_pride.npz",
+      "sha256": "58dda2ef976381bc7cd731d09ff7e39fd020f7c85657c8fb5bce2e48a3213c18",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 4,
+      "text": "alice",
+      "file": "smol036/capture/layer_04_alice.npz",
+      "sha256": "4d7bf87955d945bd489602c27f02efd528a663373ec50261525a50ceed91f7aa",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 4,
+      "text": "moby",
+      "file": "smol036/capture/layer_04_moby.npz",
+      "sha256": "56c6fa9233bcfb41a3fc7df08889e6adf29d77cfafcb2fbd4f5e7212468e0ffb",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 4,
+      "text": "pride",
+      "file": "smol036/capture/layer_04_pride.npz",
+      "sha256": "78e9febfd6e3bbcc839e5245048ac4daa424291f4eae448cc54f5415d8b5097c",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 5,
+      "text": "alice",
+      "file": "smol036/capture/layer_05_alice.npz",
+      "sha256": "8b7a77de8912b1e18ccedb1bb3818abf1fdd5925b90e5eafe74374e7b737fe6f",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 5,
+      "text": "moby",
+      "file": "smol036/capture/layer_05_moby.npz",
+      "sha256": "0a65bce6a2833eb80a1c9ededf6a8cc5211481bac2f79040c1fa90809186643d",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 5,
+      "text": "pride",
+      "file": "smol036/capture/layer_05_pride.npz",
+      "sha256": "e8151bbdf06d58870231a779b1bfefa243063b682df8205295263fc769c98460",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 6,
+      "text": "alice",
+      "file": "smol036/capture/layer_06_alice.npz",
+      "sha256": "c77a1f1d0e131858b08d2a584c63a3fa1b846d74f66f9cc28e80cdde55268334",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 6,
+      "text": "moby",
+      "file": "smol036/capture/layer_06_moby.npz",
+      "sha256": "59b1f4f98b7b2d183e3861ac114ef0920e6b50dfaee52cce228ac34a62ec4048",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 6,
+      "text": "pride",
+      "file": "smol036/capture/layer_06_pride.npz",
+      "sha256": "af8cb00ccda5d7a663ca0c885affe51b395a29027ea40bae4c1594ad58d55f60",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 7,
+      "text": "alice",
+      "file": "smol036/capture/layer_07_alice.npz",
+      "sha256": "73c4f5a5303a86d9c9ba86ab4b2d20820e193e46f695abed2b89d47591b6036b",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 7,
+      "text": "moby",
+      "file": "smol036/capture/layer_07_moby.npz",
+      "sha256": "808f25a2d02b5e12175b0bfc92c1fbf12e328f53583f523ea86268d0b89c8e37",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 7,
+      "text": "pride",
+      "file": "smol036/capture/layer_07_pride.npz",
+      "sha256": "d2771cecd3d8be8ee6e200b9e89f11bac2797f966f81802cd11a99fded727020",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 8,
+      "text": "alice",
+      "file": "smol036/capture/layer_08_alice.npz",
+      "sha256": "4b10c0ac7daf42dad8b797b9d9042fc81337a0f718226f8be4afae4830e754d8",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 8,
+      "text": "moby",
+      "file": "smol036/capture/layer_08_moby.npz",
+      "sha256": "864218d7a74d2db0961a9ffccc12a6a472a4fc31d8c63f530efddbc2fcd4440e",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 8,
+      "text": "pride",
+      "file": "smol036/capture/layer_08_pride.npz",
+      "sha256": "5ef2d9a66a1b2857351f1d950e193e205532cac70acf725afba9de4514a9fba9",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 9,
+      "text": "alice",
+      "file": "smol036/capture/layer_09_alice.npz",
+      "sha256": "a7cd1f324740ebb8f3276e762378834ce4b9d4664e2255947c6c2290a86162a5",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 9,
+      "text": "moby",
+      "file": "smol036/capture/layer_09_moby.npz",
+      "sha256": "3b517c9f75b2e2c087da69141b4dd3da5ada4bf38080efeb33deb7a856b75530",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 9,
+      "text": "pride",
+      "file": "smol036/capture/layer_09_pride.npz",
+      "sha256": "3475d206b8f25bad5df77bf58c45759e4488d029587765325cf2f486635b25d6",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 10,
+      "text": "alice",
+      "file": "smol036/capture/layer_10_alice.npz",
+      "sha256": "dc8ca6e9b225700658f8aba497b1c9612f40dc58a6354e7fd6f277bab911c3a8",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 10,
+      "text": "moby",
+      "file": "smol036/capture/layer_10_moby.npz",
+      "sha256": "16b7b3abea4fdc404017b637cd1ca67dc35b1d5ed3483574ecf540919f020532",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 10,
+      "text": "pride",
+      "file": "smol036/capture/layer_10_pride.npz",
+      "sha256": "8f36fa5b66cb2ad70876829f1f4a8abc55b8c36a1fc57db6222b5e9087ec8eea",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 11,
+      "text": "alice",
+      "file": "smol036/capture/layer_11_alice.npz",
+      "sha256": "ac47fcd7e5b21ff48365b4d466fa997ebac2e93abb4774749d534a4b14dad174",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 11,
+      "text": "moby",
+      "file": "smol036/capture/layer_11_moby.npz",
+      "sha256": "8075c8ca715db0b5887227ac6af7e5846558d71f55f4c5d001051529e979c654",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 11,
+      "text": "pride",
+      "file": "smol036/capture/layer_11_pride.npz",
+      "sha256": "6e05899093f9fddad662ad7ee8ea3621c4fc6c1a5483650fc1c6cadbc379989d",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 12,
+      "text": "alice",
+      "file": "smol036/capture/layer_12_alice.npz",
+      "sha256": "b1675cedab6851394b42fb50cbab40d1d358485b77a6c569697de1a552da116b",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 12,
+      "text": "moby",
+      "file": "smol036/capture/layer_12_moby.npz",
+      "sha256": "cdfbb09913d9f3401bd0e854768686a21b591e5b6a1ad11cb5f707d78f54a3a9",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 12,
+      "text": "pride",
+      "file": "smol036/capture/layer_12_pride.npz",
+      "sha256": "4b1f9b1617e287c105e1d866d55f8904994921472fb25079aca99a1d53a64dbc",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 13,
+      "text": "alice",
+      "file": "smol036/capture/layer_13_alice.npz",
+      "sha256": "c170b26cdc61f5f8cb8a5b77d9acfff0570b8b9a88f94a7434ce93623b68d965",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 13,
+      "text": "moby",
+      "file": "smol036/capture/layer_13_moby.npz",
+      "sha256": "3cb7471163c9126c78efe6295c0ea8f962932e03fb7c0d3211798c637158924e",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 13,
+      "text": "pride",
+      "file": "smol036/capture/layer_13_pride.npz",
+      "sha256": "8f87aa0e98416e0c1183119bc9d6bfc7302925945a41fad8b902cddeaaff73a1",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 14,
+      "text": "alice",
+      "file": "smol036/capture/layer_14_alice.npz",
+      "sha256": "594c24a66f7d9adfd7ff18ccdde6a1bccc2ca8d5cd5227469a4073eb875fea50",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 14,
+      "text": "moby",
+      "file": "smol036/capture/layer_14_moby.npz",
+      "sha256": "1ce0cf8c0867cb108f77c2b900299b934ed6be042ef46ccfcbebe83425936e87",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 14,
+      "text": "pride",
+      "file": "smol036/capture/layer_14_pride.npz",
+      "sha256": "cb541e9fc3ec8455c3b1133c89995d98799449c2e0f5e3ffe07617176b0a7e61",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 15,
+      "text": "alice",
+      "file": "smol036/capture/layer_15_alice.npz",
+      "sha256": "4ed880ea6989ec6554aaad9700c88526aa3b66eb58ed763f425e239e849ab04d",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 15,
+      "text": "moby",
+      "file": "smol036/capture/layer_15_moby.npz",
+      "sha256": "a8eb5dda8a856423adf5d6072ece33374d4edea43b25d2fd8a3cc82895310973",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 15,
+      "text": "pride",
+      "file": "smol036/capture/layer_15_pride.npz",
+      "sha256": "f5368c24dafed8c64065af1f9042eaeb1e26c021f85e269024192453d40ee279",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 16,
+      "text": "alice",
+      "file": "smol036/capture/layer_16_alice.npz",
+      "sha256": "4aaf0c2d0241665be1c3c07556d3726421b933c6323b2d85a44cd74834a98c7a",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 16,
+      "text": "moby",
+      "file": "smol036/capture/layer_16_moby.npz",
+      "sha256": "2159e7db5d1f99c2f787d83408ddf69cf5f903dfdc18b553092e2b309d695471",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 16,
+      "text": "pride",
+      "file": "smol036/capture/layer_16_pride.npz",
+      "sha256": "9e111755e65069b5b6c5c9304e4933450af8a7eafbbb659a8f09bc2761436f38",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 17,
+      "text": "alice",
+      "file": "smol036/capture/layer_17_alice.npz",
+      "sha256": "f67a2ba4038b43b4bca198a4d18df5cf60517f66f2b336668da71d24f8b6ba5d",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 17,
+      "text": "moby",
+      "file": "smol036/capture/layer_17_moby.npz",
+      "sha256": "8df99b941fcb155da3a1319bb49f74fd86e558054aafd90edfa09ed4aa78d6ae",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 17,
+      "text": "pride",
+      "file": "smol036/capture/layer_17_pride.npz",
+      "sha256": "6cc0352a60d3025ad957cca1e14743fad79b330660247610b8e873e7d728849f",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 18,
+      "text": "alice",
+      "file": "smol036/capture/layer_18_alice.npz",
+      "sha256": "dfb0dd28a39a3961342d79e95faffddcaff347d2a8062ce8a53a50382983c6ca",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 18,
+      "text": "moby",
+      "file": "smol036/capture/layer_18_moby.npz",
+      "sha256": "2e1c69b3b775b522afab69150d66e09ca64a8fbb5a57f95459bdef9309d7c2b1",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 18,
+      "text": "pride",
+      "file": "smol036/capture/layer_18_pride.npz",
+      "sha256": "b1a63a24a04e740bafc646e329dba55b5a1657a5a34a33892a84339321bd9094",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 19,
+      "text": "alice",
+      "file": "smol036/capture/layer_19_alice.npz",
+      "sha256": "2228ceeca655da35451cf8bdf0197aca2fa42b0ad4688efd1cdf96d33f4c8ed7",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 19,
+      "text": "moby",
+      "file": "smol036/capture/layer_19_moby.npz",
+      "sha256": "41142e745c32198367ab994b89da38ca908693a90f8d7b75f4b9940bed045d28",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 19,
+      "text": "pride",
+      "file": "smol036/capture/layer_19_pride.npz",
+      "sha256": "cddeddb2d70096572c4c8386c9c592676c8e75e4f04c39a98362e99e1658cd21",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 20,
+      "text": "alice",
+      "file": "smol036/capture/layer_20_alice.npz",
+      "sha256": "1837612ef2b31d343013cc27a21efda167f76f989e1df4b3a912ac6820ed0afd",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 20,
+      "text": "moby",
+      "file": "smol036/capture/layer_20_moby.npz",
+      "sha256": "4560b38db3eb3c6e01650aa60a3e3cbe73e8321fc45245307630c64d0a5b2c80",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 20,
+      "text": "pride",
+      "file": "smol036/capture/layer_20_pride.npz",
+      "sha256": "244e27a39d81af63bc16880fa20f9ca70fdf7ccc81d896bca1f03e170e585ce1",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 21,
+      "text": "alice",
+      "file": "smol036/capture/layer_21_alice.npz",
+      "sha256": "afecdcee056553c13bc2bfaef2d44447d9460d130c1c774fada62c3ac9e36a6c",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 21,
+      "text": "moby",
+      "file": "smol036/capture/layer_21_moby.npz",
+      "sha256": "ae7063bd44864c89634a873b386dbdf737a547ef54dc28d0697e63f38fe888fc",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 21,
+      "text": "pride",
+      "file": "smol036/capture/layer_21_pride.npz",
+      "sha256": "6c9f1b64d58d2800435f7eb554bb7b028887a694a12e3a4b9ef65a0479ca1d17",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 22,
+      "text": "alice",
+      "file": "smol036/capture/layer_22_alice.npz",
+      "sha256": "09f42976453a801594341e16b917a0a40f373151fa8aaed41708f08a813eedaa",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 22,
+      "text": "moby",
+      "file": "smol036/capture/layer_22_moby.npz",
+      "sha256": "7ec6f4eae1dab96ee02620997b9da0eaac1eceb29fe70e7f15d92e351fce4e6d",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 22,
+      "text": "pride",
+      "file": "smol036/capture/layer_22_pride.npz",
+      "sha256": "31c5424b5d48188183f09d2a5bd77ce9470f1425e1c6c4bcab3a84a041e255eb",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 23,
+      "text": "alice",
+      "file": "smol036/capture/layer_23_alice.npz",
+      "sha256": "347c06cc2cd2f069080890ce78920b3a307a0e3fdd84fd6f4386e806e4f83232",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 23,
+      "text": "moby",
+      "file": "smol036/capture/layer_23_moby.npz",
+      "sha256": "a7d72ec9b0bfe19e3d31b2d25014ce2e31ceccff5f836648d84ac6804e5e6230",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 23,
+      "text": "pride",
+      "file": "smol036/capture/layer_23_pride.npz",
+      "sha256": "8fd7aa5a01fa3b5e4c8b743881377992ec952b257c283df4ccaca5caa878006d",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 24,
+      "text": "alice",
+      "file": "smol036/capture/layer_24_alice.npz",
+      "sha256": "9b803e79dd7423eb012a31d4351944f18edfe9a7c730cdd6f00699bbf58a741e",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 24,
+      "text": "moby",
+      "file": "smol036/capture/layer_24_moby.npz",
+      "sha256": "1908b1ef398bb4ceab567faa6928b2cf8ce40f8947c7f12a2015b6c17026ef97",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 24,
+      "text": "pride",
+      "file": "smol036/capture/layer_24_pride.npz",
+      "sha256": "7676954d7dccfdf4b216628354d177bd42f1c5c06a4aff845aa1493c727dbb84",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 25,
+      "text": "alice",
+      "file": "smol036/capture/layer_25_alice.npz",
+      "sha256": "b729f2ad424c4b8036959d00e80a072a16234718355ee2c43c9d2f3ec5c9e36d",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 25,
+      "text": "moby",
+      "file": "smol036/capture/layer_25_moby.npz",
+      "sha256": "6bf275c6b478d103ac0a151bbc8705567340315b2c736a7dd0c922dd725fd655",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 25,
+      "text": "pride",
+      "file": "smol036/capture/layer_25_pride.npz",
+      "sha256": "79bf90dbb0146c7c657cdf40b8b8b59691f6d791cecd8474a14891269e60cbc8",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 26,
+      "text": "alice",
+      "file": "smol036/capture/layer_26_alice.npz",
+      "sha256": "2ebbf1ab35910304e15e87e3a244e1465f35939c67c34e1c076520879724c218",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 26,
+      "text": "moby",
+      "file": "smol036/capture/layer_26_moby.npz",
+      "sha256": "0e2d73da47197789612e7fd36dfd9bf4f00a03f5ceb3eb8037a68620c89d67ee",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 26,
+      "text": "pride",
+      "file": "smol036/capture/layer_26_pride.npz",
+      "sha256": "7dc1da866e52c8ea009890096a3eac0f9b24d22bfa329c8950d998dc036ab4dd",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 27,
+      "text": "alice",
+      "file": "smol036/capture/layer_27_alice.npz",
+      "sha256": "dac7d73e8202500944d92a7049727bdd22a96c8a31862e1832de5bc71fc479fe",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 27,
+      "text": "moby",
+      "file": "smol036/capture/layer_27_moby.npz",
+      "sha256": "bfc2b2b87a99658280f9ec9d4d6ef8db3993ba63b49b883f94f1d2541a631129",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 27,
+      "text": "pride",
+      "file": "smol036/capture/layer_27_pride.npz",
+      "sha256": "fc56c61ffb0a56a8830aafbe046f47b304259c810280d52c1d7c463d6affb823",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 28,
+      "text": "alice",
+      "file": "smol036/capture/layer_28_alice.npz",
+      "sha256": "7dc576ff35a0bb727d10369627487f483b21318f44331712810823c3256fe672",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 28,
+      "text": "moby",
+      "file": "smol036/capture/layer_28_moby.npz",
+      "sha256": "a8dae3e5aef449ed5989b45426e3b6b870a4199322f43a3710010250efb9c95f",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 28,
+      "text": "pride",
+      "file": "smol036/capture/layer_28_pride.npz",
+      "sha256": "2887759918849b0bda8523bd5ee900c71a2d085850682fffa39c23a2ba957d07",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 29,
+      "text": "alice",
+      "file": "smol036/capture/layer_29_alice.npz",
+      "sha256": "79310b1790fc3104db6be2de2eac70d728c887b566e10d943e97abbf9c66a69c",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 29,
+      "text": "moby",
+      "file": "smol036/capture/layer_29_moby.npz",
+      "sha256": "e903f8b1fb99912a4b67971bebbd1647967993805cb43a556df1eff9cdda116f",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 29,
+      "text": "pride",
+      "file": "smol036/capture/layer_29_pride.npz",
+      "sha256": "474cdfc066d25e29424a45d12acc447329a6b03a413ac4d864ff896f1289cfe7",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 30,
+      "text": "alice",
+      "file": "smol036/capture/layer_30_alice.npz",
+      "sha256": "bc446bcf9d8bc259dde91cf0c1c4877da0da0996b174c44327851efc087c4fa1",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 30,
+      "text": "moby",
+      "file": "smol036/capture/layer_30_moby.npz",
+      "sha256": "599a7443606bdded0a295c448508be379b96d9bfd7df09c324807eabf7ebafc4",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 30,
+      "text": "pride",
+      "file": "smol036/capture/layer_30_pride.npz",
+      "sha256": "7f27f5db9767e9b80eefa69c3a0c390fa38b96a8c81547c7828cbcaf973b07af",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 31,
+      "text": "alice",
+      "file": "smol036/capture/layer_31_alice.npz",
+      "sha256": "c813bf5d78f46c20a452eff483859565ebbfa7382db7916355b2045fb0b3be21",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 31,
+      "text": "moby",
+      "file": "smol036/capture/layer_31_moby.npz",
+      "sha256": "e11dd276f10d4c07a74dd07fac9ce68a24c7645dd4163f8342226862f135563b",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    },
+    {
+      "layer": 31,
+      "text": "pride",
+      "file": "smol036/capture/layer_31_pride.npz",
+      "sha256": "0fbb5d8c0a7acbcfb5e6d1e8a368ae9f983e472b366d6a33270667c6f178a2ca",
+      "q_shape": [
+        15,
+        1024,
+        64
+      ],
+      "k_shape": [
+        5,
+        1024,
+        64
+      ],
+      "v_shape": [
+        5,
+        1024,
+        64
+      ],
+      "dtype": "bf16",
+      "scale": 0.125
+    }
+  ],
+  "capture_point": "Actual native BF16 post-RoPE Q/K, pre-GQA-duplication K/V.",
+  "attention_baseline": "Unmodified Transformers SDPA BF16 attention.",
+  "storage": "External NPZ captures; manifest filenames are relative to work-dir."
+}
