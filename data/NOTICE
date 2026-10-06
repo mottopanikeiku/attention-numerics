@@ -1,0 +1,11 @@
+Text input: Lewis Carroll, Alice's Adventures in Wonderland (1865), chapter I.
+The excerpt in alice.txt is from https://www.gutenberg.org/files/11/11-0.txt,
+read on 2026-10-06. The underlying work is public domain in the United States.
+The text is not generated or repeated to manufacture a long sequence.
+
+Model-derived operands: Qwen/Qwen2.5-0.5B-Instruct, revision
+7ae557604adf67be50417f59c2c2f167def9a775.
+The model is distributed by the Qwen team under Apache-2.0; a copy of its
+license is in LICENSE-APACHE. Model weights are not included in this repository.
+The capture records actual CPU BF16 forward-pass Q/K/V from the specified
+layers and heads; it is not a GPU measurement or a model-quality evaluation.

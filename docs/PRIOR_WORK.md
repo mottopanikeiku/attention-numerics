@@ -9,8 +9,44 @@ This project is CPU emulation, not a new attention kernel or a hardware accuracy
 - **DeepSeek-AI (2025), [DeepSeek-V3 Technical Report, arXiv:2412.19437v2](https://arxiv.org/html/2412.19437v2#S3.SS3.SSS2), §3.3.2, “Increasing Accumulation Precision”.** Exact wording: “However, we observe that the accumulation precision of FP8 GEMM on NVIDIA H800 GPUs is limited to retaining around 14 bits, which is significantly lower than FP32 accumulation precision.” It reports promotion to FP32 CUDA-core registers every N_C=128 inner-dimension elements, equivalent to four WGMMAs. [§3.5.2, “Higher FP8 GEMM Accumulation Precision in Tensor Cores”](https://arxiv.org/html/2412.19437v2#S3.SS5.SSS2) states: “After aligning 32 mantissa products by right-shifting based on the maximum exponent, the Tensor Core only uses the highest 14 bits of each mantissa product for addition, and truncates bits exceeding this range. The accumulation of addition results into registers also employs 14-bit precision.” This motivates a **surrogate**, not a bit-exact H800 model: 32-product shared-exponent truncation, 14 significant bits (including the leading bit), truncation toward zero, and optional 128-term promotion. The report does not specify every rounding detail; the chosen reduction order and significand interpretation are explicit assumptions.
 - **Ashkboos et al. (2024), [QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs](https://arxiv.org/html/2404.00456v2), §3–4.** Randomized Hadamard transforms remove activation outliers while preserving unquantized computation; the method includes integer 4-bit weights/activations/KV caches. Here only Q/K rotation is tested with FP8; this is not a reproduction of QuaRot's end-to-end method.
 
+## SageAttention: key smoothing before integer quantization
+
+Zhang et al., **SageAttention: Accurate 8-Bit Attention for Plug-and-Play Inference Acceleration**, ICLR 2025. These details were checked against the [full paper, arXiv:2410.02367v9](https://arxiv.org/pdf/2410.02367v9), dated 1 October 2025; the version is pinned because later revisions need not retain the same numbering.
+
+[§4.2, Eq. (6)](https://arxiv.org/html/2410.02367v9#S4.SS2) defines `gamma(K) = K - mean(K)`, where `mean(K) = sum_t K[t, :] / N` is a channel vector averaged over **all tokens**, not a scalar averaged over channels or a separate mean for each key tile. In the paper's single-head `N × d` notation, this is one vector per head, broadcast to every token. The subtraction precedes quantization; Algorithm 1 explicitly places it in preprocessing. The motivation is the authors' observation that key-channel outliers can be a large common bias across tokens plus a smaller token-dependent signal. This is an observed pattern in their operands, not a guarantee about every model's keys.
+
+Write `K_c = K - 1 mu_K`. For query row `q_r`,
+
+$$
+\frac{q_r K_c^\top}{\sqrt d}
+= \frac{q_r K^\top}{\sqrt d}
+- \frac{q_r\mu_K^\top}{\sqrt d}\mathbf{1}^\top.
+$$
+
+The removed term is constant across keys within that query row, so row softmax is unchanged in exact arithmetic. The **logits do change**; the probabilities and attention output do not. This does not promise identical results after mean/subtraction rounding, quantization, or finite-precision matmul.
+
+[§4.3–4.5 and Table 6](https://arxiv.org/html/2410.02367v9#S4.SS3) distinguish SageAttention's variants: Q/K use INT8, with per-token or per-block scales. SAGEAttn-B/T retain the unnormalized online-softmax probabilities and V in FP16 and use an FP16 matmul accumulator. The vB/vT variants instead quantize those operands to INT8. Thus neither “all operands are FP8” nor “every SageAttention variant uses FP16 P/V” describes the paper.
+
+## SageAttention2: query smoothing needs a correction
+
+Zhang et al., **SageAttention2: Efficient Attention with Thorough Outlier Smoothing and Per-thread INT4 Quantization**, [ICML 2025 publication record](https://proceedings.mlr.press/v267/zhang25ae.html). Method details were checked against the [full paper, arXiv:2411.10958v7](https://arxiv.org/pdf/2411.10958v7), dated 1 October 2025.
+
+[§3.1, Eq. (2) and the following decomposition](https://arxiv.org/html/2411.10958v7#S3.SS1) center each **query block** using its token-axis mean `mu_Qi`, while K uses the all-token mean `mu_K`. Both are channel vectors. After quantizing the centered operands and dequantizing their product, the method adds `Delta S_ij = mu_Qi (K_j - mu_K)^T` before softmax. This vector varies across keys and is broadcast across query rows in the block. Only the remaining row-constant term can be discarded. The §3.1 decomposition suppresses attention's `1/sqrt(d)` factor; that factor applies to the corrected logits as in §2.1, Eq. (1).
+
+Naively replacing Q by `Q - mu_Q` subtracts `mu_Q K^T`, which is generally **not** constant across keys. Unlike K centering, Q centering alone is not softmax-invariant. SageAttention2's compensating GEMV is essential, not an optional accuracy adjustment.
+
+[§3.2 and Appendix A.6, Eq. (8)](https://arxiv.org/html/2411.10958v7#A1.SS6) describe hardware-layout-aware **per-thread INT4 Q/K** quantization; the INT4 MMA accumulates into INT32 before dequantization. [§3.3](https://arxiv.org/html/2411.10958v7#S3.SS3) uses **E4M3 FP8** for V and the unnormalized online-softmax quantity `P_tilde = exp(S - m)`, not already-normalized P. P_tilde has a static scale `1/448`, while V is quantized per channel. [§4.1, Table 3](https://arxiv.org/html/2411.10958v7#S4.SS1) also defines SageAttention2-8b: it uses INT8 Q/K and omits Q smoothing, while retaining the other techniques.
+
+[§3.4 and Algorithm 1](https://arxiv.org/html/2411.10958v7#S3.SS4) separate FP8 **operand format** from accumulation. The authors report an effective FP22 internal accumulator for the tested Ada/Hopper `mma(f32f8f8f32)` instruction: one sign bit, eight exponent bits, and thirteen trailing significand bits. They compute a block's P_tilde/V product in that accumulator, then combine block products and online rescaling in a separate FP32 register buffer. This is the paper's hardware observation and two-level strategy, not a universal specification of every FP8 instruction or a measurement by this project. FP32 destination registers alone do not establish full-FP32 internal accumulation.
+
+## Why the FP8 surrogate is not a Sage reproduction
+
+[Micikevicius et al., arXiv:2209.05433v2, §2–3 and Table 1](https://arxiv.org/html/2209.05433v2#S3) specify an exponent and significand in **each FP8 element**, alongside software-managed tensor scaling. Within a fixed scaled quantization group, integer quantization has a uniform absolute step. Normal FP8 spacing instead grows with the element's exponent, with approximately relative precision within its normal range; subnormals and saturation are exceptions. Sharing a block scale does not make FP8 a uniform integer grid. Consequently, removing a large absolute maximum or rotating outliers is not, by itself, proof that FP8 error must improve.
+
+This project's key-centering-only FP8 surrogate borrows SageAttention's softmax-invariant preprocessing while leaving Q uncentered and retaining the emulator's FP8 scaling and rounding choices. It does not reproduce SageAttention's INT8 Q/K kernels or SageAttention2's corrected Q smoothing, per-thread INT4 groups, static P_tilde/per-channel V FP8 quantization, and hardware two-level accumulation. The optional shared Q/K Hadamard transform is a separate ablation, not Sage's mean-subtraction method. It cannot establish Sage kernel accuracy, speed, end-to-end model quality, or a unique cause of rotation failure. The controlled results and remaining uncertainty are in [MODEL.md](MODEL.md#rotation-diagnosis).
+
 ## What this adds
 
 A small inspectable rounding model and controlled ablations separate input quantization, probability quantization, accumulation, online rescaling, and output rounding. The study compares the same synthetic arrays to a two-pass chunked float64 reference and reports error as context grows. It adds no claim of a new algorithm, GPU speed, model quality, or H800 prediction.
 
-The CPU float32 condition is the strongest locally available baseline for this question. FlashAttention GPU implementations cannot be run on this GPU-free machine; comparisons to their published numerical tables would mix hardware, inputs, and rounding models, so they are not made.
+The locally available accuracy baselines are the NumPy FP32 condition and PyTorch CPU scaled-dot-product attention at BF16/FP32 on the same captured operands ([results](../results/real.csv)). CPU SDPA/BF16 is effectively tied in median error and wins on the first layer's first tested head. FlashAttention GPU implementations cannot run on this GPU-free machine; comparisons to their published numerical tables would mix hardware, inputs and rounding models, so they are not made.
