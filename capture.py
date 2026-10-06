@@ -3,7 +3,6 @@
 import argparse
 import hashlib
 import json
-import os
 from pathlib import Path
 
 import numpy as np
@@ -26,12 +25,9 @@ def sha256(path):
 
 
 def main(output, length):
-    os.environ.setdefault("HF_HOME", "/home/alp/Projects/profile-program/cache/hf")
     torch.set_num_threads(1)
     torch.set_num_interop_threads(1)
-    snapshot = Path(
-        snapshot_download(MODEL, revision=REVISION, cache_dir=Path(os.environ["HF_HOME"]) / "hub")
-    )
+    snapshot = Path(snapshot_download(MODEL, revision=REVISION))
     # Verify the full download against the committed manifest on subsequent runs.
     files = ["model.safetensors", "config.json", "tokenizer.json", "tokenizer_config.json"]
     hashes = {name: sha256(snapshot / name) for name in files}
