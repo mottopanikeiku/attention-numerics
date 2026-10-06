@@ -1,0 +1,35 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "checkpoint_hashes": {
+    "model.safetensors": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+    "config.json": "18e18afcaccafade98daf13a54092927904649e1dd4eba8299ab717d5d94ff45",
+    "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+  },
+  "capture_sha256": "74a110a5d9d1942121d8967f58595112c1e5d287828aac5b53ac8540cb92fe34",
+  "text_sha256": "482a5a7b91518b8e349128d4955a96f9c07980e2073d06a7f5bac7d99fbe847a",
+  "text_source": "Lewis Carroll, Alice's Adventures in Wonderland, chapter I, public domain in the US; https://www.gutenberg.org/files/11/11-0.txt",
+  "tokens": 1024,
+  "layers_zero_based": [
+    0,
+    12
+  ],
+  "query_heads_zero_based": [
+    0,
+    7
+  ],
+  "kv_heads_zero_based": [
+    0,
+    1
+  ],
+  "head_dimension": 64,
+  "torch": "2.10.0+cpu",
+  "transformers": "4.57.6",
+  "dtype": "bfloat16 CPU model forward; captured arrays expanded exactly to float32",
+  "position": "after rotary embedding, before grouped-query K/V repetition and attention",
+  "preceding_layers": "unmodified Transformers eager attention in BF16; stopped before layer-12 attention",
+  "model_license": "Apache-2.0",
+  "threads": 1,
+  "timings": "not measured"
+}
