@@ -7,11 +7,13 @@ import pytest
 from attention import (
     Config,
     cast,
+    center_keys,
     emulate,
     hadamard,
     matmul,
     metrics,
     quantize,
+    quantize_qk,
     reference,
     shared_exponent_sum,
     truncate_significand,
@@ -35,6 +37,57 @@ def test_chunked_reference_matches_independent_dense(causal, tile):
     q, k, v = (rng.normal(size=(19, 8)) for _ in range(3))
     actual = reference(q, k, v, causal=causal, tile=tile, query_tile=3)
     np.testing.assert_allclose(actual, dense(q, k, v, causal), rtol=2e-14, atol=2e-14)
+
+
+@pytest.mark.parametrize("causal", [False, True])
+@pytest.mark.parametrize("rows", [None, np.array([0, 8, 22])])
+def test_smooth_keys_preserves_float64_reference(causal, rows):
+    rng = np.random.default_rng(53)
+    q, k, v = (rng.normal(size=(23, 16)) for _ in range(3))
+    k += rng.normal(size=16) * 128
+    np.testing.assert_allclose(
+        reference(q, center_keys(k), v, causal=causal, rows=rows),
+        reference(q, k, v, causal=causal, rows=rows),
+        rtol=2e-12,
+        atol=2e-12,
+    )
+
+
+@pytest.mark.parametrize("causal", [False, True])
+@pytest.mark.parametrize("rotate", [False, True])
+def test_fp32_smooth_keys_matches_independent_dense(causal, rotate):
+    rng = np.random.default_rng(59)
+    q, k, v = (rng.normal(size=(35, 16)).astype(np.float32) for _ in range(3))
+    k[:, 0] += 32
+    cfg = Config(
+        storage="fp32",
+        output="fp32",
+        smooth_k=True,
+        rotate=rotate,
+        causal=causal,
+        query_tile=5,
+        tile=7,
+    )
+    np.testing.assert_allclose(emulate(q, k, v, cfg), dense(q, k, v, causal), atol=3e-6, rtol=1e-5)
+
+
+def test_smooth_keys_does_not_center_queries():
+    q = np.array([[1.0], [3.0]], dtype=np.float32)
+    k = np.array([[0.0], [1.0]], dtype=np.float32)
+    v = k.copy()
+    qs, _, _, _ = quantize_qk(q, k, Config(storage="fp32", smooth_k=True))
+    np.testing.assert_array_equal(qs, q)
+    assert not np.allclose(reference(q, k, v), reference(center_keys(q), k, v))
+
+
+def test_smooth_keys_centers_before_float32_conversion():
+    q = np.ones((1, 1))
+    k = np.array([[2.0**30 + 1], [2.0**30 + 3]])
+    v = np.array([[0.0], [1.0]])
+    cfg = Config(storage="fp32", output="fp32", smooth_k=True)
+    _, _, ks, _ = quantize_qk(q, k, cfg)
+    np.testing.assert_array_equal(ks, [[-1], [1]])
+    np.testing.assert_allclose(emulate(q, k, v, cfg), reference(q, k, v), atol=1e-7, rtol=0)
 
 
 @pytest.mark.parametrize("storage", ["fp32", "bf16", "e4m3", "e5m2"])

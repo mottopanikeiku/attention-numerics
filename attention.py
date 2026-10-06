@@ -27,6 +27,7 @@ class Config:
     probability: Format | None = None  # None means same format as storage.
     output: Format = "bf16"
     rotate: bool = False
+    smooth_k: bool = False
     compensated: bool = False
     update: Literal["global", "local"] = "global"
     order: Literal["forward", "reverse"] = "forward"
@@ -160,6 +161,26 @@ def _inputs(q, k, v, rows):
     return q, k, v, rows
 
 
+def center_keys(k):
+    """Subtract the token mean in float64; a constant logit shift per query."""
+    k = np.asarray(k, dtype=np.float64)
+    return k - np.mean(k, axis=0, dtype=np.float64)
+
+
+def quantize_qk(q, k, cfg):
+    """Shared Q/K preparation for attention and score-distribution diagnostics."""
+    q = np.asarray(q, dtype=np.float32)
+    k = center_keys(k).astype(np.float32) if cfg.smooth_k else np.asarray(k, dtype=np.float32)
+    if cfg.rotate:
+        signs = np.random.default_rng(1729).choice([-1, 1], size=q.shape[1])
+        q, k = hadamard(q, signs), hadamard(k, signs)
+    qblock = cfg.query_tile if cfg.scaling == "tile" else None
+    kblock = cfg.tile if cfg.scaling == "tile" else None
+    qs, qscale = quantize(q, cfg.storage, qblock)
+    ks, kscale = quantize(k, cfg.storage, kblock)
+    return qs, qscale, ks, kscale
+
+
 def _probabilities(p, fmt):
     if fmt in FP8_MAX:
         scale = np.float32(1 / FP8_MAX[fmt])
@@ -170,15 +191,10 @@ def _probabilities(p, fmt):
 def emulate(q, k, v, config=None, rows=None):
     """Online attention; memory O(Nd + query_tile*key_tile), including sampled rows."""
     q, k, v, rows = _inputs(q, k, v, rows)
-    q, k, v = (x.astype(np.float32) for x in (q, k, v))
+    q, v = (x.astype(np.float32) for x in (q, v))
     cfg = Config() if config is None else config
-    if cfg.rotate:
-        signs = np.random.default_rng(1729).choice([-1, 1], size=q.shape[1])
-        q, k = hadamard(q, signs), hadamard(k, signs)
-    qblock = cfg.query_tile if cfg.scaling == "tile" else None
+    qs, qscale, ks, kscale = quantize_qk(q, k, cfg)
     kvblock = cfg.tile if cfg.scaling == "tile" else None
-    qs, qscale = quantize(q, cfg.storage, qblock)
-    ks, kscale = quantize(k, cfg.storage, kvblock)
     vs, vscale = quantize(v, cfg.storage, kvblock)
     softmax_scale = np.float32(cfg.scale if cfg.scale is not None else q.shape[1] ** -0.5)
     output = np.empty((len(rows), v.shape[1]), dtype=np.float32)
