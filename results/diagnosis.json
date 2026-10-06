@@ -96,7 +96,7 @@
     "1",
     "2",
     "--checkpoint-header",
-    "/home/alp/Projects/profile-program/cache/hf/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775/model.safetensors"
+    "$HF_HOME/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775/model.safetensors"
   ],
   "timings": "not measured",
   "capture": {
@@ -83220,7 +83220,7 @@
     }
   ],
   "checkpoint_header": {
-    "path": "/home/alp/Projects/profile-program/cache/hf/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775/model.safetensors",
+    "path": "$HF_HOME/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775/model.safetensors",
     "header_only": true,
     "weight_checksum_checked": false,
     "bias_tensors": {
