@@ -79,6 +79,7 @@ def main(path, destination):
                         stream.flush()
                     print(f"Real operands: layer={layer} head={head} N={n}", flush=True)
     summary = environment()
+    summary["reference"] = "float64 chunked two-pass attention of the captured BF16 operands"
     summary["capture"] = metadata
     summary["torch"] = torch.__version__
     summary["cpu_baseline"] = (

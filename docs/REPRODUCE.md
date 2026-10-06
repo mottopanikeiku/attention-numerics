@@ -25,12 +25,13 @@ pp-run heavy uv run python sweep.py --study fixes
 pp-run heavy uv run python sweep.py --study tiles
 pp-run heavy uv run python sweep.py --study softmax
 pp-run heavy uv run python sweep.py --study full
+pp-run heavy uv run python sweep.py --study full64 --seeds 3
 pp-run heavy uv run python sweep.py --study dots
 pp-run heavy uv run python sweep.py --study denominator
 uv run python figures.py
 ```
 
-The wrapper on the workstation is `/home/alp/Projects/profile-program/bin/pp-run`, with a default 1400 MB memory cap. The `full` study uses every query row at N=4096. Other studies use every row at N<=1024 and four 32-row query tiles at longer lengths, while still attending to the full allowed key context. The reference never allocates a large N×N array. Raw CSV fields preserve query counts, seeds, worst original row index, tile size, all rounding configuration, relative error, max absolute error and row-L2 error. JSON files record software and commands. `summary.json` reports seed medians and ranges, not statistical confidence bounds.
+The wrapper on the workstation is `/home/alp/Projects/profile-program/bin/pp-run`, with a default 1400 MB memory cap. `full` evaluates every query at N=4096, both dimensions/masks and three seeds. `full64` evaluates every query at N=65536 in one unit-Gaussian, d=64, non-causal case with seed 3 (FP32, BF16, E4M3/tensor). Other studies use all queries at N<=1024 and four 32-row query tiles at longer lengths, attending to the full allowed key context. The reference never allocates a large N×N array. CSVs retain query counts, seeds, worst original row, tile size, rounding choices and all error metrics. JSONs record software/commands. `summary.json` reports seed medians/ranges, not confidence bounds.
 
 `dots.csv` compares long matrix reductions on already-quantized E4M3 **storage** values to float64 products of those same values. Thus it isolates arithmetic from input quantization; its absolute errors are in storage units, not dequantized attention units. K is a GEMM reduction dimension, not a statement that the tiled attention kernel reduces all N keys at once.
 

@@ -102,10 +102,11 @@ def test_quantization_zero_and_tile_scale():
     assert scales[0] != scales[2]
 
 
-def test_rotation_preserves_dot_products_and_norms():
+@pytest.mark.parametrize("dimension", [64, 128])
+def test_rotation_preserves_dot_products_and_norms(dimension):
     rng = np.random.default_rng(12)
-    q, k = (rng.normal(size=(7, 64)).astype(np.float32) for _ in range(2))
-    signs = rng.choice([-1, 1], size=64)
+    q, k = (rng.normal(size=(7, dimension)).astype(np.float32) for _ in range(2))
+    signs = rng.choice([-1, 1], size=dimension)
     qr, kr = hadamard(q, signs), hadamard(k, signs)
     np.testing.assert_allclose(qr @ kr.T, q @ k.T, atol=5e-6, rtol=5e-6)
     np.testing.assert_allclose(np.linalg.norm(qr, axis=1), np.linalg.norm(q, axis=1), rtol=2e-7)

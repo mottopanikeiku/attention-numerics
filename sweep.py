@@ -22,9 +22,7 @@ CONFIGS = {
     "e5_tensor": Config(storage="e5m2"),
     "e4_tile": Config(storage="e4m3", scaling="tile"),
     "e4_rotate": Config(storage="e4m3", scaling="tile", rotate=True),
-    "e4_rotate_no_p_round": Config(
-        storage="e4m3", scaling="tile", rotate=True, probability="fp32"
-    ),
+    "e4_rotate_no_p_round": Config(storage="e4m3", scaling="tile", rotate=True, probability="fp32"),
     "e4_reduced": Config(storage="e4m3", accumulator="reduced14"),
     "e4_promoted": Config(storage="e4m3", accumulator="reduced14", promote=128),
     "e4_compensated": Config(storage="e4m3", compensated=True),
@@ -158,7 +156,6 @@ def environment():
             for name in ["OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"]
         },
         "command": sys.argv,
-        "reference": "float64 two-pass; unquantized input arrays as supplied",
         "timings": "not measured",
     }
 
@@ -201,9 +198,14 @@ def run(study, destination, seeds):
                     stream.flush()
                 print(f"{study}: N={n} d={d} causal={causal} {scenario} seed={seed}", flush=True)
     metadata = environment()
+    metadata["reference"] = (
+        "float64 chunked two-pass attention of original generated float32 inputs"
+    )
     metadata["seeds"] = seeds
     metadata["query_rows"] = (
-        "all at N<=1024/full study; otherwise four complete 32-row blocks at 0,N/4,N/2,N-32"
+        "all query rows"
+        if study in ("full", "full64")
+        else "all at N<=1024; otherwise four complete 32-row blocks at 0,N/4,N/2,N-32"
     )
     (destination / f"{study}.json").write_text(json.dumps(metadata, indent=2) + "\n")
 
@@ -236,7 +238,10 @@ def dot_study(destination, seeds):
                             **{key: result[key] for key in ["max_abs", "relative_frobenius"]},
                         }
                     )
-    (destination / "dots.json").write_text(json.dumps(environment(), indent=2) + "\n")
+    metadata = environment()
+    metadata["seeds"] = seeds
+    metadata["reference"] = "float64 matmul of already-quantized FP8 storage values; not attention"
+    (destination / "dots.json").write_text(json.dumps(metadata, indent=2) + "\n")
 
 
 def denominator_study(destination):
@@ -269,14 +274,26 @@ def denominator_study(destination):
                             **{key: result[key] for key in ["max_abs", "relative_frobenius"]},
                         }
                     )
-    (destination / "denominator.json").write_text(json.dumps(environment(), indent=2) + "\n")
+    metadata = environment()
+    metadata["reference"] = "analytic 1/(1+(N-1)*exp(-16)) in float64; numerator exactly 1"
+    (destination / "denominator.json").write_text(json.dumps(metadata, indent=2) + "\n")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--study",
-        choices=["length", "fixes", "tiles", "softmax", "full", "full64", "smoke", "dots", "denominator"],
+        choices=[
+            "length",
+            "fixes",
+            "tiles",
+            "softmax",
+            "full",
+            "full64",
+            "smoke",
+            "dots",
+            "denominator",
+        ],
         default="length",
     )
     parser.add_argument("--output", type=Path, default=Path("results"))

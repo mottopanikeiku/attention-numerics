@@ -69,7 +69,7 @@ def length_plot(rows):
         ax.set_title("Gaussian σ=1" if scenario == "normal" else "One Q/K/V channel ×8")
         ax.grid(alpha=0.2)
     axes[0].set_ylabel("Relative Frobenius error (%)")
-    axes[1].legend(loc="lower right", fontsize=8)
+    axes[1].legend(loc="center left", bbox_to_anchor=(1.02, 0.5), fontsize=8)
     fig.suptitle("CPU emulation · d=64, non-causal · medians and seed ranges")
     fig.text(
         0.5,
@@ -138,17 +138,30 @@ def tile_plot(rows):
     axes[1].legend(fontsize=8)
     fig.suptitle("Gaussian σ=1 · 64k keys, 128 non-causal queries · CPU emulation")
     fig.tight_layout()
+    fig.text(
+        0.5,
+        -0.03,
+        "Lines: seed medians; shading: observed min–max, not confidence intervals",
+        ha="center",
+        fontsize=9,
+    )
     save(fig, "tiles.svg")
 
 
 def dot_plot(rows):
     fig, ax = plt.subplots(figsize=(7, 4))
+    fp32_zeros = []
     for color, variant in zip(COLORS, ["fp32", "reduced14", "promoted128"], strict=False):
         sizes = sorted({int(row["k"]) for row in rows})
         stats = np.array([statistic(select(rows, k=size, variant=variant)) for size in sizes])
         median, lower, upper = stats.T
-        ax.plot(sizes, median, "o-", color=color, label=variant)
-        ax.fill_between(sizes, lower, upper, color=color, alpha=0.15)
+        if variant == "fp32":
+            fp32_zeros = [str(k) for k, value in zip(sizes, median, strict=True) if value == 0]
+        # A logarithmic axis cannot represent zero; never invent a positive error floor.
+        ax.plot(sizes, np.ma.masked_equal(median, 0), "o-", color=color, label=variant)
+        ax.fill_between(
+            sizes, lower, upper, where=(lower > 0) & (upper > 0), color=color, alpha=0.15
+        )
     ax.set_xscale("log", base=2)
     ax.set_yscale("log")
     ax.set_xlabel("Inner reduction dimension K (not attention sequence length)")
@@ -156,6 +169,22 @@ def dot_plot(rows):
     ax.set_title("Already-quantized FP8 products · reduced14 surrogate · 4×K @ K×4")
     ax.grid(alpha=0.2)
     ax.legend()
+    if fp32_zeros:
+        ax.text(
+            0.03,
+            0.30,
+            f"FP32 medians: exactly 0 at K={','.join(fp32_zeros)}\n"
+            "Zero points/bounds omitted on log axes",
+            transform=ax.transAxes,
+            fontsize=8,
+        )
+    fig.text(
+        0.5,
+        -0.03,
+        "Lines: seed medians; shading: observed min–max, not confidence intervals",
+        ha="center",
+        fontsize=9,
+    )
     save(fig, "dots.svg")
 
 
@@ -170,8 +199,12 @@ def real_plot(rows):
             for variant in variants
         ]
         ax.plot(
-            np.arange(len(variants)), values, "o-", color=COLORS[offset],
-            label=f"layer {layer}, head {head}", alpha=0.85,
+            np.arange(len(variants)),
+            values,
+            "o-",
+            color=COLORS[offset],
+            label=f"layer {layer}, head {head}",
+            alpha=0.85,
         )
     ax.set_xticks(np.arange(len(variants)), names, rotation=15, ha="right")
     ax.set_ylabel("Relative Frobenius error (%)")
@@ -180,9 +213,11 @@ def real_plot(rows):
     ax.grid(alpha=0.2)
     ax.legend(fontsize=8)
     fig.text(
-        0.5, -0.04,
+        0.5,
+        -0.04,
         "One public-domain text, four heads; prefix activations captured on CPU, not GPU",
-        ha="center", fontsize=9,
+        ha="center",
+        fontsize=9,
     )
     save(fig, "real.svg")
 
@@ -257,7 +292,7 @@ if __name__ == "__main__":
         rows = load(study)
         studies.append(rows)
         plot(rows)
-    for study in ["softmax", "full"]:
+    for study in ["softmax", "full", "full64"]:
         studies.append(load(study))
     dot_plot(load("dots"))
     real_plot(load("real"))
