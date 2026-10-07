@@ -31,6 +31,14 @@ LABELS = {
     "rotate_smooth_k": "Rotate + smooth K",
     "smooth_kq": "Smooth K + Q",
 }
+MODEL_NAMES = {
+    "qwen05": "Qwen2.5-0.5B",
+    "qwen15": "Qwen2.5-1.5B",
+    "smol036": "SmolLM2-360M",
+    "smol17": "SmolLM2-1.7B",
+    "tiny11": "TinyLlama-1.1B",
+    "olmo1": "OLMo-2-1B",
+}
 LIMITATIONS = [
     "Heads share model weights, layers and inputs; texts and heads are dependent observations.",
     "Descriptive summaries only: no inferential confidence intervals or independence claims.",
@@ -401,46 +409,48 @@ def draw_figures(points, downstream, results_dir):
         _save(fig, results_dir / "layers.svg", plt)
 
         if downstream is not None:
-            fig, axes = plt.subplots(1, 3, figsize=(15, 5.8))
-            x = np.arange(len(DOWNSTREAM_VARIANTS))
-            fields = ("ce_delta_from_bf16", "exp_ce_relative_change_from_bf16", "mean_kl")
-            labels = (
-                "CE − BF16 CE (nats/token)",
-                "expCE change from BF16 (%)",
-                "Mean KL from BF16 (nats/token)",
+            variants = DOWNSTREAM_VARIANTS[1:]
+            order = sorted(
+                downstream,
+                key=lambda model: -downstream[model]["variants"]["rotate"][
+                    "exp_ce_relative_change_from_bf16"
+                ],
             )
-            for ax, field, label in zip(axes, fields, labels, strict=True):
-                for model, values in downstream.items():
-                    ys = [values["variants"][variant][field] for variant in DOWNSTREAM_VARIANTS]
-                    if field == "exp_ce_relative_change_from_bf16":
-                        ys = [100 * value for value in ys]
-                    ax.plot(
-                        x, ys, "o-", markersize=4, linewidth=1.2, color=colors[model], label=model
-                    )
-                ax.axvspan(-0.25, 0.25, color="#dddddd", alpha=0.5)
-                ax.axhline(0, color="#555555", linewidth=0.8)
-                ax.set_xticks(
-                    x, [LABELS[variant] for variant in DOWNSTREAM_VARIANTS], rotation=40, ha="right"
-                )
-                ax.set_ylabel(label)
-                ax.grid(axis="y", alpha=0.2)
-            axes[-1].legend(fontsize=8)
-            fig.suptitle("Held-out batch teacher forcing · token-weighted text aggregates")
-            coverage = "; ".join(
-                f"{model}: {values['variants']['bf16']['tokens']} tokens / "
-                f"{len(values['texts'])} texts"
-                for model, values in downstream.items()
+            floor = 0.05
+            fig, ax = plt.subplots(figsize=(9.5, 0.62 * len(order) + 1.9))
+            offsets = np.linspace(-0.24, 0.24, len(variants))
+            for index, variant in enumerate(variants):
+                xs, ys = [], []
+                for row, model in enumerate(order):
+                    values = downstream[model]["variants"][variant]
+                    change = values["exp_ce_relative_change_from_bf16"]
+                    xs.append(max(100 * change, floor))
+                    ys.append(row + offsets[index])
+                ax.scatter(xs, ys, s=34, color=COLORS[index], label=LABELS[variant], zorder=3)
+            for row in range(len(order)):
+                ax.axhline(row, color="#eeeeee", linewidth=0.8, zorder=1)
+            ax.set_xscale("log")
+            ax.set_xlim(floor, 1500)
+            ax.set_yticks(range(len(order)), [MODEL_NAMES.get(model, model) for model in order])
+            ax.invert_yaxis()
+            ax.set_xlabel(
+                "Increase in batch expCE (perplexity proxy) over BF16 attention, % (log scale)"
             )
-            fig.text(0.5, 0.035, coverage, ha="center", fontsize=8, wrap=True)
+            ax.xaxis.set_major_formatter(
+                matplotlib.ticker.FuncFormatter(lambda value, _: f"{value:g}%")
+            )
+            ax.grid(axis="x", alpha=0.25)
+            ax.legend(loc="lower right", fontsize=8, framealpha=0.95)
+            ax.set_title("Emulated FP8 attention in every layer: whole-model loss")
             fig.text(
                 0.5,
                 0.005,
-                "expCE = exp(token-weighted CE), not generation perplexity. "
-                "Baseline shaded; batch calibration may use later tokens.",
+                "3,072 held-out next-token targets per model (three texts); batch teacher forcing, "
+                f"not generation perplexity. Values below {floor:g}% are drawn at {floor:g}%.",
                 ha="center",
-                fontsize=9,
+                fontsize=8,
             )
-            fig.tight_layout(rect=(0, 0.1, 1, 0.94))
+            fig.tight_layout(rect=(0, 0.04, 1, 1))
             _save(fig, results_dir / "downstream.svg", plt)
 
 
