@@ -10,9 +10,9 @@ test('E4M3 raw and saturating bytes match the Python fixture', () => {
     assert.equal(encodeFP8(value), saturated, `saturating float32 bits ${bits.toString(16)}`);
   }
 });
-test('All finite E4M3 storage values round-trip, including negative zero', () => {
+test('All E4M3 storage bytes round-trip, including negative zero and signed NaNs', () => {
   for (let byte = 0; byte < 256; byte++) {
-    if ((byte & 127) !== 127) assert.equal(encodeFP8(decodeFP8(byte)), byte);
+    assert.equal(encodeFP8(decodeFP8(byte)), byte);
   }
 });
 test('Common key component and exact rotation leave softmax unchanged', () => {
