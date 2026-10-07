@@ -1,0 +1,69 @@
+{
+  "mode": "tokens",
+  "manifest": {
+    "plan_sha256": "e0b6004b2b84db01afabcbc768390fd6721ac06bc88fc1697d8d8d1423d3532d",
+    "item_manifest_sha256": "c6e424668137fee31d143d729b9f9d14e73257804c1daf2ad2fb14f2f642ab8c",
+    "models": {
+      "qwen05": {
+        "sha256": "ad7c908514b04aab77482872c77e303e8f0a3e34b10d76bf65831cc3b63779e4",
+        "bytes": 1337339,
+        "choices": 20687,
+        "input_tokens_per_variant": 1759308,
+        "maximum_sequence_length": 998,
+        "tokenizer_class": "Qwen2TokenizerFast",
+        "bos_token_id": null,
+        "special_tokens": "tokenizer-native default, as harness add_bos_token=None"
+      },
+      "qwen15": {
+        "sha256": "e2db3603c35c724b7b7945e8391898a29c5dabb0cc4c2db01b19512d12988fa5",
+        "bytes": 1337336,
+        "choices": 20687,
+        "input_tokens_per_variant": 1759308,
+        "maximum_sequence_length": 998,
+        "tokenizer_class": "Qwen2TokenizerFast",
+        "bos_token_id": null,
+        "special_tokens": "tokenizer-native default, as harness add_bos_token=None"
+      },
+      "qwen3": {
+        "sha256": "c6dd75384245fc11b4687541d5b59585a459f97c578e10bea7adeaf4148c58f3",
+        "bytes": 1337336,
+        "choices": 20687,
+        "input_tokens_per_variant": 1759308,
+        "maximum_sequence_length": 998,
+        "tokenizer_class": "Qwen2TokenizerFast",
+        "bos_token_id": null,
+        "special_tokens": "tokenizer-native default, as harness add_bos_token=None"
+      },
+      "qwen7": {
+        "sha256": "714c769bf650fac318940df688d082bb8835a42edbc38c796b3b00ee18d821a5",
+        "bytes": 1337338,
+        "choices": 20687,
+        "input_tokens_per_variant": 1759308,
+        "maximum_sequence_length": 998,
+        "tokenizer_class": "Qwen2TokenizerFast",
+        "bos_token_id": null,
+        "special_tokens": "tokenizer-native default, as harness add_bos_token=None"
+      },
+      "mistral7": {
+        "sha256": "85a70e17344a7b595eb6604805ca35c4e6b8bfc0c73f4aeb4cc3ce5490eb2093",
+        "bytes": 1450027,
+        "choices": 20687,
+        "input_tokens_per_variant": 1972621,
+        "maximum_sequence_length": 1134,
+        "tokenizer_class": "LlamaTokenizerFast",
+        "bos_token_id": 1,
+        "special_tokens": "tokenizer-native default, as harness add_bos_token=None"
+      },
+      "olmo7": {
+        "sha256": "32b600c879fb89a918f7035f9681d20c7d4782637231a8ab5c195b3194140703",
+        "bytes": 1334036,
+        "choices": 20687,
+        "input_tokens_per_variant": 1741767,
+        "maximum_sequence_length": 973,
+        "tokenizer_class": "GPT2TokenizerFast",
+        "bos_token_id": 100257,
+        "special_tokens": "tokenizer-native default, as harness add_bos_token=None"
+      }
+    }
+  }
+}
