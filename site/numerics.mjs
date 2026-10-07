@@ -11,7 +11,7 @@ export function decodeFP8(byte) {
   const magnitude = byte & 127;
   const exponent = magnitude >> 3;
   const fraction = magnitude & 7;
-  if (magnitude === 127) return NaN;
+  if (magnitude === 127) return floatFromBits(byte & 128 ? 0xffc00000 : 0x7fc00000);
   return sign * (exponent === 0 ? fraction * 2 ** -9 : (1 + fraction / 8) * 2 ** (exponent - 7));
 }
 const levels = Array.from({ length: 127 }, (_, code) => decodeFP8(code));
