@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "question": "Does real FA3 E4M3 attention change correct multiple-choice answers, including larger and other-family models?",
+  "models": [
+    {"key": "qwen05", "repo_id": "Qwen/Qwen2.5-0.5B-Instruct", "revision": "7ae557604adf67be50417f59c2c2f167def9a775", "license": "Apache-2.0", "family": "Qwen2.5", "parameters_billions": 0.5},
+    {"key": "qwen15", "repo_id": "Qwen/Qwen2.5-1.5B-Instruct", "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306", "license": "Apache-2.0", "family": "Qwen2.5", "parameters_billions": 1.5},
+    {"key": "qwen3", "repo_id": "Qwen/Qwen2.5-3B-Instruct", "revision": "aa8e72537993ba99e69dfaafa59ed015b17504d1", "license": "Qwen RESEARCH: non-commercial research/evaluation only", "license_url": "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct/blob/aa8e72537993ba99e69dfaafa59ed015b17504d1/LICENSE", "family": "Qwen2.5", "parameters_billions": 3},
+    {"key": "qwen7", "repo_id": "Qwen/Qwen2.5-7B-Instruct", "revision": "a09a35458c702b33eeacc393d103063234e8bc28", "license": "Apache-2.0", "family": "Qwen2.5", "parameters_billions": 7},
+    {"key": "mistral7", "repo_id": "mistralai/Mistral-7B-v0.3", "revision": "caa1feb0e54d415e2df31207e5f4e273e33509b1", "license": "Apache-2.0", "family": "Mistral", "parameters_billions": 7},
+    {"key": "olmo7", "repo_id": "allenai/OLMo-2-1124-7B", "revision": "7df9a82518afdecae4e8c026b27adccc8c1f0032", "license": "Apache-2.0", "family": "OLMo2", "parameters_billions": 7}
+  ],
+  "variants": ["bf16", "tile", "rotate", "smooth_k", "rotate_smooth_k"],
+  "tasks": {
+    "arc_challenge": {"count": 1172, "split": "test", "sample": "all items", "metric": "acc_norm"},
+    "hellaswag": {"count": 2000, "split": "validation", "sample": "uniform without replacement, random.Random(seed), sorted source order", "metric": "acc_norm"},
+    "mmlu": {"count": 2000, "split": "test", "sample": "subject-stratified proportional largest-remainder allocation; deterministic subject-specific seed", "metric": "acc"}
+  },
+  "sample_seed": 20261007,
+  "item_selection": "data/accuracy/selection.json",
+  "item_manifest": "data/accuracy/items.json.gz",
+  "selection_publication": "All item IDs, source revisions and rendered prompts are committed before any GPU accuracy run.",
+  "special_tokens": "Harness HFLM default add_bos_token=None: tokenizer-native default special tokens. Jointly encode context plus continuation; no chat template.",
+  "harness": {"repo": "EleutherAI/lm-evaluation-harness", "tag": "v0.4.9.2", "revision": "ad3f4d0cad1cfcdb815f1e795f7947e49ed9f2e9", "shots": 0, "chat_template": false, "target_delimiter": " ", "normalization": "ARC/HellaSwag divide continuation log-likelihood by rendered choice character length; MMLU unnormalized label log-likelihood"},
+  "scoring": {"method": "causal batch teacher-forced continuation log-likelihood", "prediction": "argmax standard task score; first index wins an exact tie", "batching": "same exact sequence length without padding, preserving full causal masking", "projection": "native BF16 vocabulary projection only at continuation prediction positions", "reference": "matched native GPU BF16 SDPA; no CPU or earlier loss baseline", "maximum_length": "model context limit; reject overlength rather than silently change an item"},
+  "bootstrap": {"replicates": 20000, "seed": 20261007, "interval": 0.95, "unit": "paired items", "method": "percentile interval of with-replacement item resampling; paired -1/0/+1 counts are sufficient and may be resampled multinomially"},
+  "harm_rule": {"minimum_drop": 0.02, "interval_upper_below": 0, "definition": "variant accuracy minus BF16 <= -0.02 and the upper endpoint of its paired 95% interval < 0"},
+  "interpretation": "Report every model/task/variant. Intervals describe the fixed sampled task distributions, not a universal model-performance guarantee; multiple comparisons are not familywise corrected.",
+  "kernel": {"implementation": "FA3 published E4M3 API", "hardware": "NVIDIA H100 sm90", "revision": "7cb368cf8278b583132eb72cbf312d54586df2e2", "adapter": "study.hardware.fa3", "sign_seed": 1729, "key_centering": "FP64 mean/subtraction before FP32 Q/K rotation and native FP8 packing", "rotated_operands": "Q and K only; V unchanged"},
+  "new_model_risk_forecasts": "Not computed: accuracy transfer is primary; no retrospective predictor fitting.",
+  "batch_limit": "Full-sequence quantization scales and key means can use later tokens; these are batch multiple-choice scores, not streaming generation."
+}
