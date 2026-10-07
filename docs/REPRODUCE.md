@@ -187,6 +187,8 @@ ATTENTION_BACKEND=fa3 ATTENTION_GPU=none ATTENTION_MINUTES=15 ATTENTION_INPUT_BU
 
 Then run each backend with resource limits matching the intended allocation. `ATTENTION_MINUTES` sets the actual function timeout; `max_containers=1` prevents multiplication. Use a 5-minute pilot before choosing full-run limits. CPU-only image checks use `--mode image`; numerical modes reject a missing GPU, wrong architecture or unavailable API without a BF16/emulation fallback. Results return to local gzip JSON; regenerate summary/figure with `uv run python -m study.hardware.report`.
 
+The SVG rasterizes scatter points at 150 dpi for a smaller download; text and axes stay vector. The physical-head CSV retains the exact numerical values.
+
 Elapsed records size the paid experiments and bound their cost, not benchmark latency. Cost bounds include image-build attempts, uploads, pilots and full runs; they are not a Modal invoice. Quantization granularity, P representation, transform rounding and accumulation change together, so disagreement does not establish which one individually caused an error difference.
 
 ### Primary implementation sources

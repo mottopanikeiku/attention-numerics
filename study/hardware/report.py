@@ -234,6 +234,7 @@ def draw(points_by_backend, destination):
                     marker=marker,
                     color=color,
                     linewidths=0.5,
+                    rasterized=True,
                 )
             effect.scatter(
                 [point["emulator_hurt_score"] for point in subset],
@@ -242,6 +243,7 @@ def draw(points_by_backend, destination):
                 alpha=0.55,
                 color=color,
                 label=model,
+                rasterized=True,
             )
             effect.scatter(
                 [
@@ -259,6 +261,7 @@ def draw(points_by_backend, destination):
                 marker="x",
                 color=color,
                 linewidths=0.5,
+                rasterized=True,
             )
         absolute.set(
             xlabel="Emulator: mean log1p(relative output error)",
@@ -302,7 +305,7 @@ def draw(points_by_backend, destination):
         fontsize=9,
     )
     figure.tight_layout(rect=(0, 0.045, 1, 0.96))
-    figure.savefig(destination)
+    figure.savefig(destination, dpi=150)
     plt.close(figure)
 
 
