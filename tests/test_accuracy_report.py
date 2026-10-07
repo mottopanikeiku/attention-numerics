@@ -180,11 +180,18 @@ def test_all_models_tasks_variants_metrics_and_denominators_reported(frozen):
     assert len(figure.encode()) < 400000
     root = ElementTree.fromstring(figure)
     assert not root.findall(".//{http://www.w3.org/2000/svg}image")
-    assert len(root.findall(".//{http://www.w3.org/2000/svg}circle")) == 6 * 3 * 4
+    assert len(root.findall(".//{http://www.w3.org/2000/svg}g[@id]")) >= 6 * 3 * 4
     for model in plan["models"]:
         for task in plan["tasks"]:
             for variant in VARIANTS[1:]:
                 assert f"{model['key']} / {task} / {variant}" in figure
+                assert (
+                    root.find(
+                        f".//{{http://www.w3.org/2000/svg}}g"
+                        f"[@id='cell-{model['key']}-{task}-{variant}']"
+                    )
+                    is not None
+                )
     assert "minus two percentage points" in figure
 
 

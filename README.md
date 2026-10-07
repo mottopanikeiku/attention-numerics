@@ -1,68 +1,63 @@
 # attention-numerics
 
-I test whether a CPU model of quantized-attention error predicts real GPU kernels.
+I measure how FP8 attention changes multiple-choice answers.
 
-**Question:** Does rotating queries and keys before rounding hurt real attention heads, and does that damage reach the model's loss?
+**Question:** Does rotating queries and keys before rounding hurt answer accuracy, and does centering keys first help?
 
-I use the published [FA3](https://github.com/Dao-AILab/flash-attention/tree/main/hopper) and [SageAttention](https://github.com/thu-ml/SageAttention) kernels. My [reference](study/hardware/common.py) reuses exact BF16 captures; the [runner](study/hardware/worker.py) measures H100/L4 errors and FA3 model loss. I test the unchanged [rounding-noise predictor](study/prediction.py).
+Using published [FlashAttention-3](https://arxiv.org/abs/2407.08608) and pinned [lm-evaluation-harness prompts](docs/PRIOR_WORK.md#fixed-item-multiple-choice-evaluation), my [data preparation](study/accuracy/data.py) fixes the items, [scorer](study/accuracy/worker.py) changes attention in every layer, and [reporter](study/accuracy/report.py) pairs answers with native GPU BF16. Projections, RoPE, norms and MLP remain native.
 
-**Result:** The failure is real. With FA3 FP8 in every layer, rotating Q/K raises Qwen2.5-1.5B's batch exp-CE ratio to **12.56×** versus native BF16. Centering K first brings it to **1.004×**. The predictor ranks FA3 harm well, but its unchanged threshold produces **118 false alarms for only 5 harmed Qwen heads** under Sage. [Measurements](results/hardware/summary.json).
+**Result:** Rotation drops Qwen2.5-7B HellaSwag accuracy by **35.40 percentage points**, paired 95% CI **[−37.90, −32.90]**. Both centered variants have **zero ≥2pp harm flags across 48 comparisons**, but are not lossless. [All measurements](results/accuracy/summary.json).
 
-[Interactive version: the mechanism and earlier 2,880 emulated heads](https://mottopanikeiku.github.io/attention-numerics/).
+[Interactive mechanism and earlier emulated-head study](https://mottopanikeiku.github.io/attention-numerics/).
 
-## Real-kernel loss
+## Answer accuracy
 
-Each model uses 3,072 heldout next-token labels from three public-domain books. Only attention changes; projections, RoPE, norms and MLP remain native BF16. Entries are `exp(CE_variant − CE_BF16)`, **batch teacher forcing, not streaming decoder perplexity**. [Raw FA3 run](results/hardware/fa3.json.gz), [summary](results/hardware/summary.json).
+Eight checkpoints, four families, five attention variants, one H100: full **1,172-item ARC-Challenge test**, seeded **2,000-item HellaSwag validation** and subject-stratified **2,000-item MMLU test**, all zero-shot without chat templates. ARC/HellaSwag use character-normalized continuation likelihood; MMLU scores answer letters without normalization. [Item IDs, prompts and source revisions](data/accuracy/selection.json).
 
-| Qwen2.5 | BF16 CE | Unrotated | Rotated | Center K | Rotate + center K |
-|---|---:|---:|---:|---:|---:|
-| 0.5B | 2.9944 | 1.071× | **2.032×** | 1.018× | 1.056× |
-| 1.5B | 2.4103 | **4.808×** | **12.560×** | 1.014× | **1.004×** |
+The table gives BF16 accuracy percentages and the count of flagged FP8 comparisons. A flag requires a drop **≥2pp** and a paired bootstrap interval whose upper endpoint is below zero. There are 12 comparisons per checkpoint: three tasks × four nonbaseline variants. [Point estimates, all 95% intervals and raw-file hashes](results/accuracy/summary.json).
 
-The earlier CPU emulator's 5.722×/7.260× increases on 1.5B were not quantitatively accurate: actual FA3 rotation is worse, not absent. I use a matched GPU BF16 baseline, not the earlier CPU baseline. [Earlier loss](results/v2/summary.json).
-
-## Which heads transfer?
-
-I selected [918 physical heads before GPU outcomes](https://github.com/mottopanikeiku/attention-numerics/tree/2780eaf927afe4a719b714cfd4016af13acd7829/data/hardware): every head in both Qwens, plus top-ranked and independent uniform samples from SmolLM2-360M/1.7B, TinyLlama-1.1B and OLMo-2-1B. Every selected head uses the same three 1,024-token captures. Overlapping samples are measured once; top-rank enrichment is not a population estimate. [Selection](data/hardware/selection.json).
-
-For the **672 exhaustive Qwen heads**, the unchanged predictor's zero threshold gives:
-
-| Kernel | Rotation harms | AUC | Precision / recall | Accuracy / majority baseline |
+| Checkpoint | ARC | HellaSwag | MMLU | Harm flags / 12 |
 |---|---:|---:|---:|---:|
-| FA3, H100 | 87 / 672 | 0.956 | 64% / 91% | 92.3% / 87.1% |
-| Sage, L4 | 5 / 672 | 0.966 | **4% / 100%** | **82.4% / 99.3%** |
+| Qwen2.5-0.5B-Instruct | 33.87 | 53.75 | 44.75 | 3 |
+| Qwen2.5-1.5B-Instruct | 46.84 | 69.55 | 61.95 | 6 |
+| Qwen2.5-3B-Instruct | 48.38 | 76.80 | 65.00 | 1 |
+| Qwen2.5-7B-Instruct | 55.20 | 80.90 | 71.60 | 6 |
+| Qwen2.5-14B-Instruct | 62.29 | 85.40 | 78.75 | 0 |
+| Mistral-7B-v0.3 | 54.35 | 81.50 | 58.40 | 0 |
+| OLMo-2-1124-7B | 57.17 | 81.25 | 59.50 | 0 |
+| SmolLM2-1.7B | 47.44 | 72.95 | 48.60 | 0 |
 
-Sage's high AUC does not make the threshold useful: there are very few positives and many false alarms. Across all selected heads, emulator/kernel **unrotated** error-rank correlation is 0.992 for FA3 and 0.850 for Sage; rotation-effect correlation is 0.982 versus 0.263. They disagree on whether rotation hurts in 28 versus 146 heads. [Stratum statistics and disagreements](results/hardware/summary.json).
+The other three families are **base** checkpoints, so this is not a controlled ranking of family quality. Damage is not monotone with size: 7B Qwen is much worse than 14B here. Centering also leaves smaller losses: Qwen1.5B MMLU falls **1.50pp [−2.50, −0.50]** with `smooth_k`, below the chosen flag threshold.
 
-![Real-kernel versus emulator errors and rotation effects for each selected head](results/hardware/real_vs_emulator.svg)
+![All 96 paired accuracy changes and 95% intervals; red cells meet the fixed harm rule](results/accuracy/paired-change.svg)
 
-## Why this happens
+`tile` names unrotated FA3 with **full-sequence per-head scales**, not the earlier block-scaled emulator. `rotate` applies a shared signed Hadamard to Q/K; `smooth_k` subtracts the key mean; `rotate_smooth_k` does both. V is never rotated.
 
-A common vector in K adds a row-constant score, which exact softmax cancels. Rotation can spread that large vector across channels, coarsening the token-specific residual during rounding. Subtracting the mean key preserves exact attention while reducing that numerical problem. [Derivation](docs/V2_PREDICTION.md).
+## Why centering can help
 
-The APIs are not the emulator: FA3 uses full-sequence head scales, native FP8 tensor-core accumulation and a different probability scale. Sage uses INT8 Q/K, per-channel FP8 V and BF16 transform narrowing. I preserve the same Q/K Hadamard; V is never rotated. These differences change together, so I do not isolate one as the cause. [Settings and provenance](docs/REPRODUCE.md#real-kernel-comparison).
+A shared key vector adds the same offset to every visible score in a query row; exact softmax cancels it. Rotation can spread that vector across channels and coarsen the token-specific residual during rounding. Removing it preserves exact attention, not necessarily quantized attention. The results support a contributor, not one universal cause. [Derivation and earlier controls](docs/V2_PREDICTION.md).
 
-## Earlier prediction study
-
-I [published the predictor and threshold](https://github.com/mottopanikeiku/attention-numerics/tree/prediction-locked) before loading three evaluation models. On their 1,728 emulated heads, AUC was 0.978. It uses operand rounding-noise second moments and ideal softmax/output sensitivity—not measured FP8 outputs. It is expensive, not a runtime controller; unseen error-level R² was 0.50 and pooled transformation-gain R² only 0.003. [CPU results](results/v2/rotation_risk.json), [fit](results/v2/fit.json).
+The earlier real-kernel study measured a **12.56× batch exp-CE ratio** for rotated Qwen1.5B and **1.004×** after centering. It also showed that high predictor AUC can coexist with poor Sage threshold precision. These are separate numerical/loss experiments, not task-accuracy forecasts. [Earlier results](results/hardware/summary.json).
 
 ## Reproduce
 
-My complete cloud cost bound was **$0.87**, including failed image builds and pilots, not an invoice ([cost](results/hardware/cost.json)). Prepare the operand Volume using the [committed capture pipeline and upload instructions](docs/REPRODUCE.md#real-kernel-comparison): original CPU capture cost $0 paid compute and 16.4 GB of model files. The pinned bundle is private, not currently downloadable; [all input hashes](data/hardware/operands.json) are committed.
+Recompute the table and figure from committed compressed item records on CPU, with **$0 paid compute**:
 
 ```sh
-uv sync --locked --extra capture --extra hardware
-ATTENTION_BACKEND=fa3 ATTENTION_GPU=H100 ATTENTION_MINUTES=15 ATTENTION_MEM_GIB=32 uv run modal run study/hardware/modal_app.py --mode full --output results/hardware/fa3.json.gz
-ATTENTION_BACKEND=sage ATTENTION_GPU=L4 ATTENTION_MINUTES=15 uv run modal run study/hardware/modal_app.py --mode full --output results/hardware/sage.json.gz
+uv sync --locked --python 3.13
+uv run python -m study.accuracy.report --additional-plan data/accuracy/qwen14-plan.json --additional-plan data/accuracy/smol17-plan.json
 ```
+
+Repeating model scoring requires **H100 80GB** for the native FA3 FP8 API. CPU-only cloud stages download/hash weights and tokenize before GPU allocation. The complete new-study compute bound is **$4.77 including the failed preparation and pilot**, not an invoice; downloaded checkpoint copies were removed afterward. [Cost accounting](results/accuracy/cost.json); [full stages, licenses, methods and review](docs/REPRODUCE.md#fixed-item-multiple-choice-accuracy).
 
 ## Limits and prior work
 
-- Six small checkpoints, three books and one context length; no task-general claim.
-- Batch means/scales may see later tokens; no generation or latency benchmark.
-- Sage has per-head comparisons only; downstream loss was measured for FA3.
-- Exact operand reproduction depends on access to the private bundle or rebuilding matched captures/results.
+- Fixed samples and standard zero-shot prompts, not chat or task-general ability.
+- Itemwise intervals, no multiple-comparison correction; absence of a flag is not equivalence.
+- Full-sequence scales/means can see later tokens: batch scoring, not streaming generation.
+- One GPU/kernel configuration; no latency or memory-saving benchmark, no new-model risk forecast.
+- Qwen3B is noncommercial research/evaluation only; the other model checkpoints are Apache-2.0. No weights are redistributed.
 
-Built on [FlashAttention-3](https://arxiv.org/abs/2407.08608), [SageAttention](https://arxiv.org/abs/2410.02367) and [SageAttention2](https://arxiv.org/abs/2411.10958), using their actual published kernels; [attribution and distinctions](docs/PRIOR_WORK.md).
+Built on [FlashAttention-3](https://arxiv.org/abs/2407.08608), earlier [SageAttention](https://arxiv.org/abs/2410.02367) comparisons and [lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness/tree/ad3f4d0cad1cfcdb815f1e795f7947e49ed9f2e9); upstream work is attributed, not presented as my kernel.
 
 Written with AI coding assistance.

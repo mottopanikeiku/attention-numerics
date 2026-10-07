@@ -151,3 +151,25 @@ pilot fix. The extension review confirmed independent plan-specific storage,
 unchanged original plan/items, separate raw plan hashes, parent/settings checks
 and all 84 nonbaseline comparisons. The targeted regression run passed 89
 tests, including extension-parent, changed-task and duplicate-model rejection.
+
+The final two read-only reviews found no remaining actionable defects. The
+methods reviewer independently matched all eight raw-file hashes, 206,880
+per-item records, every one of the 120 summary rows and bootstrap seeds/intervals,
+all README baseline/flag counts, the −35.40pp Qwen7 HellaSwag interval and the
+smaller −1.50pp centered Qwen1.5 MMLU loss. It confirmed all 96 cells of the
+readable 288,006-byte vector figure and the 16-run $4.7701 compute-bound sum.
+
+The runtime reviewer checked all eight recorded H100 sm90 runs, zero nonfinite
+scores and `N = context_tokens + choice_token_count − 1` throughout. Each raw
+file contains the pinned native module and a `FlashAttnFwdSm90` CUDA kernel
+instantiated with `cutlass::float_e4m3_t`, plus the expected checked layer order
+for every nonbaseline batch. Profiler traces cover one captured tile batch per
+checkpoint, not separate traces of every variant/batch. A focused pinned-source
+review also checked SmolLM2's Llama dispatch, BOS ID zero, tied output weights,
+24-layer D=64 geometry and lack of sliding masking.
+
+Neither final reviewer reran a GPU experiment or used a browser, and these
+checks do not independently reproduce the hardware outcomes. Base versus
+Instruct checkpoints, noncommercial Qwen3B licensing, fixed samples, uncorrected
+itemwise intervals and future-token-dependent batch preprocessing remain
+explicit. No new-model risk forecast was fitted.

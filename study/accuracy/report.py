@@ -9,7 +9,7 @@ import hashlib
 import json
 import math
 from collections import Counter
-from html import escape
+from io import StringIO
 from pathlib import Path
 
 import numpy as np
@@ -334,69 +334,103 @@ def summarize(plan, items, runs):
 
 
 def paired_figure(summary):
-    """Small deterministic SVG: every model/task/nonbaseline variant, no raster axes."""
+    """Compact vector table with every paired change and interval; portable font paths."""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Rectangle
+
     rows = [row for row in summary["rows"] if row["variant"] != "bf16"]
-    low = min(-3, *(100 * row["ci95"][0] for row in rows))
-    high = max(1, *(100 * row["ci95"][1] for row in rows))
-    step = max(1, math.ceil((high - low) / 10))
-    low, high = math.floor(low / step) * step, math.ceil(high / step) * step
-    left, right, top, spacing = 490, 950, 102, 23
-    height = top + spacing * len(rows) + 70
-
-    def x(value):
-        return left + (value - low) / (high - low) * (right - left)
-
-    svg = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="{height}" '
-        f'viewBox="0 0 1120 {height}" role="img" aria-labelledby="title desc">',
-        '<title id="title">Paired multiple-choice accuracy changes from BF16</title>',
-        '<desc id="desc">Points show changes in percentage points; lines show 95% paired '
-        "item bootstrap intervals. Dashed orange line marks minus two percentage points. "
-        "Red markers meet both the drop threshold and interval upper bound below zero.</desc>",
-        '<rect width="100%" height="100%" fill="white"/>',
-        '<g font-family="sans-serif" font-size="12" fill="#222">',
-        '<text x="20" y="28" font-size="19">'
-        "Accuracy change from BF16, all planned comparisons</text>",
-        '<text x="20" y="50">95% paired bootstrap intervals; '
-        "red = drop ≥ 2pp and upper &lt; 0</text>",
-        '<text x="20" y="77">Model / task / variant</text>',
-        '<text x="990" y="77">Δ (pp) / n</text>',
-    ]
-    bottom = top + (len(rows) - 1) * spacing + 12
-    for tick in range(low, high + 1, step):
-        at = x(tick)
-        svg.append(f'<line x1="{at:.2f}" x2="{at:.2f}" y1="87" y2="{bottom}" stroke="#ececec"/>')
-        svg.append(f'<text x="{at:.2f}" y="{bottom + 24}" text-anchor="middle">{tick}</text>')
-    for threshold, color, dash in ((0, "#222", ""), (-2, "#bb6500", ' stroke-dasharray="5 4"')):
-        at = x(threshold)
-        svg.append(
-            f'<line x1="{at:.2f}" x2="{at:.2f}" y1="87" y2="{bottom}" stroke="{color}"{dash}/>'
-        )
-    previous = None
-    for index, row in enumerate(rows):
-        y = top + index * spacing
-        if previous is not None and row["model"] != previous:
-            svg.append(f'<line x1="20" x2="1095" y1="{y - 14}" y2="{y - 14}" stroke="#bbb"/>')
-        previous = row["model"]
-        label = escape(f"{row['model']} / {row['task']} / {row['variant']}")
-        color = "#b52332" if row["harm_flag"] else "#176b8a"
-        a, b = (x(100 * value) for value in row["ci95"])
-        point = x(100 * row["delta"])
-        svg.extend(
-            [
-                f'<text x="20" y="{y + 4}">{label}</text>',
-                f'<path d="M {a:.2f} {y} H {b:.2f} M {a:.2f} {y - 4} V {y + 4} '
-                f'M {b:.2f} {y - 4} V {y + 4}" stroke="{color}" fill="none"/>',
-                f'<circle cx="{point:.2f}" cy="{y}" r="3" fill="{color}"/>',
-                f'<text x="990" y="{y + 4}">{100 * row["delta"]:+.2f} / '
-                f"{row['denominator']}</text>",
-            ]
-        )
-    svg.append(
-        f'<text x="720" y="{bottom + 49}" text-anchor="middle">'
-        "Accuracy change (percentage points; negative is worse)</text></g></svg>"
+    groups = list(dict.fromkeys((row["model"], row["task"]) for row in rows))
+    indexed = {(row["model"], row["task"], row["variant"]): row for row in rows}
+    description = (
+        "Accuracy changes in percentage points with 95% paired item bootstrap intervals. "
+        "Red cells require a drop of at least minus two percentage points and upper below zero. "
+        + "; ".join(f"{r['model']} / {r['task']} / {r['variant']}" for r in rows)
     )
-    return "\n".join(svg) + "\n"
+    with plt.rc_context({"svg.fonttype": "path", "svg.hashsalt": "accuracy", "font.size": 10}):
+        figure, axis = plt.subplots(figsize=(11.2, 1.7 + 0.36 * len(groups)))
+        axis.set_xlim(0, 5.9)
+        axis.set_ylim(-1, len(groups) + 3)
+        axis.axis("off")
+        axis.text(
+            0.02,
+            len(groups) + 2.55,
+            "Accuracy change from BF16",
+            fontsize=17,
+            fontweight="bold",
+        )
+        axis.text(
+            0.02,
+            len(groups) + 1.9,
+            "Δ percentage points [95% paired CI]; red = drop ≥ 2pp and CI upper < 0",
+            fontsize=10,
+        )
+        centers = dict(zip(VARIANTS[1:], (2.18, 3.2, 4.22, 5.24), strict=True))
+        headings = dict(
+            zip(VARIANTS[1:], ("Tile", "Rotate", "Center K", "Rotate + center K"), strict=True)
+        )
+        for variant, center in centers.items():
+            axis.text(center, len(groups) + 1.15, headings[variant], ha="center", fontweight="bold")
+        previous = None
+        for index, (model, task) in enumerate(groups):
+            y = len(groups) - index
+            if previous is not None and model != previous:
+                axis.plot((0, 5.78), (y + 0.55, y + 0.55), color="#aaa", linewidth=0.7)
+            previous = model
+            n = indexed[(model, task, "tile")]["denominator"]
+            axis.text(0.02, y, f"{model} / {task}", fontsize=10, va="center")
+            axis.text(0.02, y - 0.31, f"n = {n}", fontsize=8, color="#555", va="center")
+            for variant, center in centers.items():
+                row = indexed[(model, task, variant)]
+                color = "#b52332" if row["harm_flag"] else "#176b8a"
+                axis.add_patch(
+                    Rectangle(
+                        (center - 0.48, y - 0.49),
+                        0.96,
+                        0.86,
+                        facecolor="#fbe7e9" if row["harm_flag"] else "#f1f6f8",
+                        edgecolor="none",
+                    )
+                )
+                label = axis.text(
+                    center,
+                    y + 0.03,
+                    f"{100 * row['delta']:+.2f}",
+                    ha="center",
+                    va="center",
+                    color=color,
+                    fontweight="bold",
+                    fontsize=12,
+                )
+                label.set_gid(f"cell-{model}-{task}-{variant}")
+                lo, hi = (100 * value for value in row["ci95"])
+                axis.text(
+                    center,
+                    y - 0.3,
+                    f"[{lo:+.2f}, {hi:+.2f}]",
+                    ha="center",
+                    va="center",
+                    color=color,
+                    fontsize=8.5,
+                )
+        axis.text(
+            0.02,
+            -0.35,
+            "Intervals are itemwise; no multiple-comparison correction.",
+            fontsize=9,
+            color="#555",
+        )
+        figure.tight_layout(pad=0.6)
+        output = StringIO()
+        figure.savefig(
+            output,
+            format="svg",
+            metadata={"Date": None, "Title": "Paired accuracy changes", "Description": description},
+        )
+        plt.close(figure)
+    return output.getvalue()
 
 
 def _load(path, compressed=False):
