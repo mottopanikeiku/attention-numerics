@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "question": "Does the same real-FA3 accuracy result transfer to a fourth family, SmolLM2?",
+  "models": [
+    {
+      "key": "smol17",
+      "repo_id": "HuggingFaceTB/SmolLM2-1.7B",
+      "revision": "effd688a12921b4cc83e3312b6feb579f70f9c71",
+      "license": "Apache-2.0",
+      "family": "SmolLM2",
+      "parameters_billions": 1.7
+    }
+  ],
+  "variants": [
+    "bf16",
+    "tile",
+    "rotate",
+    "smooth_k",
+    "rotate_smooth_k"
+  ],
+  "tasks": {
+    "arc_challenge": {
+      "count": 1172,
+      "split": "test",
+      "sample": "all items",
+      "metric": "acc_norm"
+    },
+    "hellaswag": {
+      "count": 2000,
+      "split": "validation",
+      "sample": "uniform without replacement, random.Random(seed), sorted source order",
+      "metric": "acc_norm"
+    },
+    "mmlu": {
+      "count": 2000,
+      "split": "test",
+      "sample": "subject-stratified proportional largest-remainder allocation; deterministic subject-specific seed",
+      "metric": "acc"
+    }
+  },
+  "sample_seed": 20261007,
+  "item_selection": "data/accuracy/selection.json",
+  "item_manifest": "data/accuracy/items.json.gz",
+  "selection_publication": "All item IDs, source revisions and rendered prompts are committed before any GPU accuracy run.",
+  "special_tokens": "Harness HFLM default add_bos_token=None: tokenizer-native default special tokens. Jointly encode context plus continuation; no chat template.",
+  "harness": {
+    "repo": "EleutherAI/lm-evaluation-harness",
+    "tag": "v0.4.9.2",
+    "revision": "ad3f4d0cad1cfcdb815f1e795f7947e49ed9f2e9",
+    "shots": 0,
+    "chat_template": false,
+    "target_delimiter": " ",
+    "normalization": "ARC/HellaSwag divide continuation log-likelihood by rendered choice character length; MMLU unnormalized label log-likelihood"
+  },
+  "scoring": {
+    "method": "causal batch teacher-forced continuation log-likelihood",
+    "prediction": "argmax standard task score; first index wins an exact tie",
+    "batching": "same exact sequence length without padding, preserving full causal masking",
+    "projection": "native BF16 vocabulary projection only at continuation prediction positions",
+    "reference": "matched native GPU BF16 SDPA; no CPU or earlier loss baseline",
+    "maximum_length": "model context limit; reject overlength rather than silently change an item"
+  },
+  "bootstrap": {
+    "replicates": 20000,
+    "seed": 20261007,
+    "interval": 0.95,
+    "unit": "paired items",
+    "method": "percentile interval of with-replacement item resampling; paired -1/0/+1 counts are sufficient and may be resampled multinomially"
+  },
+  "harm_rule": {
+    "minimum_drop": 0.02,
+    "interval_upper_below": 0,
+    "definition": "variant accuracy minus BF16 <= -0.02 and the upper endpoint of its paired 95% interval < 0"
+  },
+  "interpretation": "Report every model/task/variant. Intervals describe the fixed sampled task distributions, not a universal model-performance guarantee; multiple comparisons are not familywise corrected.",
+  "kernel": {
+    "implementation": "FA3 published E4M3 API",
+    "hardware": "NVIDIA H100 sm90",
+    "revision": "7cb368cf8278b583132eb72cbf312d54586df2e2",
+    "adapter": "study.hardware.fa3",
+    "sign_seed": 1729,
+    "key_centering": "FP64 mean/subtraction before FP32 Q/K rotation and native FP8 packing",
+    "rotated_operands": "Q and K only; V unchanged"
+  },
+  "new_model_risk_forecasts": "Not computed: accuracy transfer is primary; no retrospective predictor fitting.",
+  "batch_limit": "Full-sequence quantization scales and key means can use later tokens; these are batch multiple-choice scores, not streaming generation.",
+  "planned_model_count": 1,
+  "extends_plan_sha256": "e0b6004b2b84db01afabcbc768390fd6721ac06bc88fc1697d8d8d1423d3532d",
+  "extension_selection": "Budget-based additional base-model architecture, chosen without inspecting candidate task accuracy; no accuracy-based model selection.",
+  "results_subdirectory": "smol17"
+}

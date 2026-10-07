@@ -120,3 +120,34 @@ differ together. Private operand access, enriched non-Qwen sampling,
 future-token-dependent batch preprocessing and FA3-only downstream evaluation
 remain explicit limitations. The README does not equate Sage's high AUC with
 useful zero-threshold precision or claim a latency benchmark.
+
+## Fixed-item task accuracy: implementation and methods
+
+Two independent read-only reviews on `openai-codex/gpt-6.1-sol:high` covered the
+new scorer and statistical design. They did not run tests, builds, linters,
+formatters, models or paid experiments, and their source review is not
+independent GPU validation.
+
+The numerical reviewer found no actionable defect. It checked joint
+context/continuation tokenization, native BOS defaults, prediction positions and
+exclusion of the final target from model input, continuation-only native BF16
+vocabulary projection, FP32 normalization and ordered FP64 token sums. It
+checked the actual Transformers 4.57.6 Qwen/Mistral/OLMo2 attention sources:
+intercepting their native SDPA call preserves projections, RoPE, OLMo2 Q/K norms
+and GQA, while exact-length batches preserve causal masking without padding.
+It also checked local-files-only loading and completed-unit persistence.
+
+The methods reviewer independently confirmed the 5,172 unique item IDs, source
+revisions, uniform HellaSwag sample, proportional 57-subject MMLU allocation and
+compressed manifest hash. It traced prompts, character normalization, MMLU
+letter choices and BOS handling to pinned lm-evaluation-harness sources, and
+checked paired multinomial bootstrap intervals and the fixed harm rule.
+
+Two P2 findings were corrected: known pilot outputs can coexist with full-run
+files without hiding missing or unknown full outputs; and the original
+six-model reproduction command no longer requires optional 14B results before
+the later instructions create them. A focused static recheck confirmed the
+pilot fix. The extension review confirmed independent plan-specific storage,
+unchanged original plan/items, separate raw plan hashes, parent/settings checks
+and all 84 nonbaseline comparisons. The targeted regression run passed 89
+tests, including extension-parent, changed-task and duplicate-model rejection.

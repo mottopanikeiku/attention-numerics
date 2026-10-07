@@ -279,7 +279,7 @@ ATTENTION_GPU=none ATTENTION_MINUTES=10 uv run modal run study/accuracy/modal_ap
 ATTENTION_GPU=none ATTENTION_MINUTES=10 uv run modal run study/accuracy/modal_app.py --mode tokens --output data/accuracy
 ATTENTION_GPU=H100 ATTENTION_MINUTES=5 uv run modal run study/accuracy/modal_app.py --mode pilot --pilot-items 8 --token-budget 65536 --output results/accuracy
 ATTENTION_GPU=H100 ATTENTION_MINUTES=55 uv run modal run study/accuracy/modal_app.py --mode full --token-budget 65536 --output results/accuracy
-uv run python -m study.accuracy.report --additional-plan data/accuracy/qwen14-plan.json
+uv run python -m study.accuracy.report
 ```
 
 Pilot timings size the allocation and cost, not kernel latency. Full raw item
@@ -297,7 +297,8 @@ separate hash preserves the original six-model plan and raw provenance.
 ```sh
 ATTENTION_GPU=none ATTENTION_MINUTES=10 uv run modal run study/accuracy/modal_app.py --mode weights --plan qwen14-plan.json --output data/accuracy/qwen14
 ATTENTION_GPU=none ATTENTION_MINUTES=10 uv run modal run study/accuracy/modal_app.py --mode tokens --plan qwen14-plan.json --output data/accuracy/qwen14
-ATTENTION_GPU=H100 ATTENTION_MINUTES=20 uv run modal run study/accuracy/modal_app.py --mode full --plan qwen14-plan.json --token-budget 65536 --output results/accuracy/qwen14
+ATTENTION_GPU=H100 ATTENTION_MINUTES=18 uv run modal run study/accuracy/modal_app.py --mode full --plan qwen14-plan.json --token-budget 65536 --output results/accuracy/qwen14
+uv run python -m study.accuracy.report --additional-plan data/accuracy/qwen14-plan.json
 ```
 
 Each extra plan gets its own Volume subdirectory, so preparing its tokens cannot
@@ -306,3 +307,25 @@ reporter includes an additional plan only when its parent hash matches and its
 task/scoring/kernel/statistical settings match exactly; it validates that plan's
 complete raw output before combining the figure. Exact known pilot filenames
 are ignored, but unknown full-run files are rejected.
+
+After collecting all GPU results, CPU-only `--mode cleanup` removes that plan's
+downloaded checkpoint directories and reports the removed publisher-file bytes.
+Tokenized choices, hashes and completed raw results stay in the Volume; a fresh
+GPU measurement requires `weights` again, while collecting an already completed
+unit does not. This avoids retaining large paid-storage copies. Run it separately
+for each measured plan, never during an active run.
+
+### Fourth-family extension
+
+The remaining compute also supported the pinned Apache-2.0 base checkpoint
+[SmolLM2-1.7B](../data/accuracy/smol17-plan.json), chosen without inspecting its
+task accuracy. It uses the same original plan hash, item IDs and rules as the
+14B extension, in a different Volume namespace. Publisher hashes are in its
+[model manifest](../data/accuracy/smol17/models.json).
+
+```sh
+ATTENTION_GPU=none ATTENTION_MINUTES=3 uv run modal run study/accuracy/modal_app.py --mode weights --plan smol17-plan.json --output data/accuracy/smol17
+ATTENTION_GPU=none ATTENTION_MINUTES=3 uv run modal run study/accuracy/modal_app.py --mode tokens --plan smol17-plan.json --output data/accuracy/smol17
+ATTENTION_GPU=H100 ATTENTION_MINUTES=6 uv run modal run study/accuracy/modal_app.py --mode full --plan smol17-plan.json --token-budget 65536 --output results/accuracy/smol17
+uv run python -m study.accuracy.report --additional-plan data/accuracy/qwen14-plan.json --additional-plan data/accuracy/smol17-plan.json
+```

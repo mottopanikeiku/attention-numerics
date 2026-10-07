@@ -113,3 +113,21 @@ For Ada I call the named INT8-QK/FP8-PV API from [official SageAttention2.2.0 so
 
 The new question is whether the unchanged operand-derived predictor transfers across those arithmetic changes, on exactly the same captured operands, and whether the emulated Qwen loss increases appear under real FP8 attention in every layer. I separate those comparisons from kernel-speed or cache-memory claims. [The reproduction appendix](REPRODUCE.md#real-kernel-comparison) records the API/settings distinctions and pinned input hashes.
 
+## Fixed-item multiple-choice evaluation
+
+Task prompts, zero-shot descriptions, continuation delimiters, native-tokenizer
+defaults, character-normalized ARC/HellaSwag accuracy and unnormalized MMLU
+letter accuracy follow
+[lm-evaluation-harness v0.4.9.2](https://github.com/EleutherAI/lm-evaluation-harness/tree/ad3f4d0cad1cfcdb815f1e795f7947e49ed9f2e9),
+under its MIT license. This repository implements the model scoring loop rather
+than invoking the harness engine; [data.py](../study/accuracy/data.py) cites the
+exact upstream task and tokenizer files used for the compatibility choices.
+
+The data come from [ARC](https://huggingface.co/datasets/allenai/ai2_arc),
+[HellaSwag](https://huggingface.co/datasets/Rowan/hellaswag) and
+[MMLU](https://huggingface.co/datasets/cais/mmlu), with immutable dataset revisions
+and all selected item IDs in [selection.json](../data/accuracy/selection.json).
+They are existing benchmarks, not new tasks. The new experiment is the paired
+within-checkpoint accuracy effect of the published FA3 FP8 kernel and algebraic
+Q/K preprocessing. It does not introduce a new attention kernel, claim
+streaming-generation accuracy, or fit a new risk predictor after seeing scores.

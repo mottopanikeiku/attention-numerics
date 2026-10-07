@@ -85,6 +85,22 @@ def experiment(mode="weights", models="", token_budget=16384, pilot_items=8, pla
     if any(key not in {entry["key"] for entry in plan["models"]} for key in selected):
         raise ValueError("Model selection is not in the published plan")
     started = time.monotonic()
+    if mode == "cleanup":
+        if GPU != "none":
+            raise ValueError("Remove downloaded checkpoint copies on CPU after all GPU runs")
+        import shutil
+
+        removed = {}
+        for entry in plan["models"]:
+            if entry["key"] not in selected:
+                continue
+            target = volume_path / "checkpoints" / entry["key"]
+            removed[entry["key"]] = sum(
+                path.stat().st_size for path in target.iterdir() if path.is_file()
+            )
+            shutil.rmtree(target)
+        volume.commit()
+        return json.dumps({"mode": mode, "removed_publisher_bytes": removed}, allow_nan=False)
     if mode == "weights":
         if GPU != "none":
             raise ValueError("Download weights in a CPU container, never on paid GPU time")
