@@ -1,0 +1,48 @@
+name: Explorable and Pages
+on:
+  push:
+    branches: [main, night2-explorable]
+  pull_request:
+    paths: ['site/**', '.github/workflows/pages.yml', 'results/v2/heads.csv', 'attention.py']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.12.5'
+      - run: uv sync --locked --python 3.13
+      - run: uv run python site/export.py
+      - run: git diff --exit-code -- site/heads.json site/fp8-fixture.json
+      - run: node --test site/test.mjs
+      - name: Prepare static files
+        run: |
+          mkdir -p _site
+          cp site/index.html site/style.css site/app.mjs site/numerics.mjs site/heads.json _site/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: site
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
