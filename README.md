@@ -1,77 +1,68 @@
 # attention-numerics
 
-I emulate FP8 attention on a CPU to find out when rotating queries and keys before rounding, the outlier fix in FlashAttention-3, makes attention worse instead of better.
+I test whether a CPU model of quantized-attention error predicts real GPU kernels.
 
-**Question:** Which heads does rotation hurt, can a model of rounding noise predict them in advance, and does it change the whole model's loss?
+**Question:** Does rotating queries and keys before rounding hurt real attention heads, and does that damage reach the model's loss?
 
-**Result:** Rotation made attention less accurate in 250 of the 2,880 heads I measured across six open models. I committed the predictor and its threshold in [f756745](https://github.com/mottopanikeiku/attention-numerics/commit/f756745) before loading three of the models. On those 1,728 unseen heads it finds the 132 harmed ones with AUC 0.978 (precision 73%, recall 79%). The damage reaches the output: with emulated FP8 attention in every layer, rotation raises Qwen2.5-0.5B's perplexity 1.91×. Subtracting the mean key first brings that to 1.06×. [Risk](results/v2/rotation_risk.json), [loss](results/v2/summary.json).
+I use the published [FA3](https://github.com/Dao-AILab/flash-attention/tree/main/hopper) and [SageAttention](https://github.com/thu-ml/SageAttention) kernels. My [reference](study/hardware/common.py) reuses exact BF16 captures; the [runner](study/hardware/worker.py) measures H100/L4 errors and FA3 model loss. I test the unchanged [rounding-noise predictor](study/prediction.py).
 
-[Explore the mechanism and all 2,880 heads interactively](https://mottopanikeiku.github.io/attention-numerics/).
+**Result:** The failure is real. With FA3 FP8 in every layer, rotating Q/K raises Qwen2.5-1.5B's batch exp-CE ratio to **12.56×** versus native BF16. Centering K first brings it to **1.004×**. The predictor ranks FA3 harm well, but its unchanged threshold produces **118 false alarms for only 5 harmed Qwen heads** under Sage. [Measurements](results/hardware/summary.json).
 
-## What I built
+[Interactive version: the mechanism and earlier 2,880 emulated heads](https://mottopanikeiku.github.io/attention-numerics/).
 
-[study/attention.py](study/attention.py) emulates tiled E4M3 attention with FlashAttention-3's random-sign Hadamard rotation and SageAttention's key smoothing. [study/prediction.py](study/prediction.py) predicts each head's error from rounding-noise statistics, with no fitted parameters. [study/stream.py](study/stream.py) runs native BF16 models one layer at a time, so 1.5B models fit in 2 GB. The FP8 conversion matches PyTorch on all 65,536 BF16 bit patterns ([validation](results/v2/validation/)).
+## Real-kernel loss
 
-## Which heads rotation hurts
+Each model uses 3,072 heldout next-token labels from three public-domain books. Only attention changes; projections, RoPE, norms and MLP remain native BF16. Entries are `exp(CE_variant − CE_BF16)`, **batch teacher forcing, not streaming decoder perplexity**. [Raw FA3 run](results/hardware/fa3.json.gz), [summary](results/hardware/summary.json).
 
-Six checkpoints from four families, every layer and head, three public-domain texts of 1,024 tokens ([models](data/v2/models.json), [per-head data](results/v2/heads.csv)). A head is harmed when its rotated error, averaged over the texts, exceeds its unrotated error.
-
-| Model | Heads harmed | AUC | Precision | Recall |
-|---|---:|---:|---:|---:|
-| Qwen2.5-0.5B | 63 / 336 | 0.974 | 74% | 92% |
-| Qwen2.5-1.5B | 36 / 336 | 0.936 | 71% | 89% |
-| SmolLM2-360M | 19 / 480 | 0.954 | 54% | 79% |
-| SmolLM2-1.7B, unseen | 73 / 768 | 0.977 | 70% | 82% |
-| TinyLlama-1.1B, unseen | 59 / 704 | 0.982 | 79% | 75% |
-| OLMo-2-1B, unseen | 0 / 256 | — | — | — |
-
-I developed the predictor on Qwen2.5-0.5B and SmolLM2-360M ([design](data/v2/design.json)). OLMo has no harmed heads, so AUC and recall are undefined; the predictor raised one false alarm there. The damage sits early. In layer 0, rotation hurts every head in both Qwen models, 29 of 32 in SmolLM2-1.7B and 26 of 32 in TinyLlama. Only one of the 132 harmed unseen heads is an attention sink ([counts](results/v2/rotation_risk.json)).
-
-![Predicted against observed effect of rotation for every head](results/v2/prediction.svg)
-
-The predictor ranks heads well (rank correlation 0.90 on unseen heads), but it is no general error model: unseen error levels have R² 0.50, and it fails to predict the other transformations' gains (R² 0.003) ([fit](results/v2/fit.json)).
-
-## Why rotation can hurt
-
-In these heads every key carries the same large vector. It adds the same number to all of a query's scores, which softmax cancels. Unrotated, the shared vector sits in a few channels where keys hold nearly equal values, so they round alike and that error cancels too. Rotation spreads it across every channel, so each element is dominated by the shared part. FP8's three mantissa bits then round the token-specific part coarsely and differently for each key, which softmax cannot cancel ([derivation](docs/V2_PREDICTION.md)).
-
-## Whole-model loss
-
-Every attention layer is replaced by the emulation; the rest stays native BF16. Entries are perplexity ratios against BF16 attention over 3,072 held-out next tokens per model ([raw](results/v2/downstream.csv)).
-
-| Model | Tile | Rotate | Smooth K | Rotate + smooth K | Smooth K + Q |
+| Qwen2.5 | BF16 CE | Unrotated | Rotated | Center K | Rotate + center K |
 |---|---:|---:|---:|---:|---:|
-| Qwen2.5-0.5B | 1.069 | **1.909** | 1.018 | 1.061 | 1.003 |
-| Qwen2.5-1.5B | **5.722** | **7.260** | 1.015 | 1.004 | 1.004 |
-| SmolLM2-360M | 1.010 | 1.003 | 1.009 | 1.003 | 1.001 |
-| SmolLM2-1.7B | 1.026 | 1.012 | 1.015 | 1.014 | 1.011 |
-| TinyLlama-1.1B | 1.013 | 1.002 | 1.013 | 1.001 | 1.002 |
-| OLMo-2-1B | 1.037 | 1.002 | 1.006 | 1.001 | 1.001 |
+| 0.5B | 2.9944 | 1.071× | **2.032×** | 1.018× | 1.056× |
+| 1.5B | 2.4103 | **4.808×** | **12.560×** | 1.014× | **1.004×** |
 
-Qwen2.5-1.5B breaks under per-tile FP8 even without rotation; rotation makes it worse. "Smooth K" subtracts the mean key, which leaves exact attention unchanged; "Smooth K + Q" also centers queries, with SageAttention2's correction.
+The earlier CPU emulator's 5.722×/7.260× increases on 1.5B were not quantitatively accurate: actual FA3 rotation is worse, not absent. I use a matched GPU BF16 baseline, not the earlier CPU baseline. [Earlier loss](results/v2/summary.json).
 
-![Whole-model loss under each variant](results/v2/downstream.svg)
+## Which heads transfer?
+
+I selected [918 physical heads before GPU outcomes](https://github.com/mottopanikeiku/attention-numerics/tree/2780eaf927afe4a719b714cfd4016af13acd7829/data/hardware): every head in both Qwens, plus top-ranked and independent uniform samples from SmolLM2-360M/1.7B, TinyLlama-1.1B and OLMo-2-1B. Every selected head uses the same three 1,024-token captures. Overlapping samples are measured once; top-rank enrichment is not a population estimate. [Selection](data/hardware/selection.json).
+
+For the **672 exhaustive Qwen heads**, the unchanged predictor's zero threshold gives:
+
+| Kernel | Rotation harms | AUC | Precision / recall | Accuracy / majority baseline |
+|---|---:|---:|---:|---:|
+| FA3, H100 | 87 / 672 | 0.956 | 64% / 91% | 92.3% / 87.1% |
+| Sage, L4 | 5 / 672 | 0.966 | **4% / 100%** | **82.4% / 99.3%** |
+
+Sage's high AUC does not make the threshold useful: there are very few positives and many false alarms. Across all selected heads, emulator/kernel **unrotated** error-rank correlation is 0.992 for FA3 and 0.850 for Sage; rotation-effect correlation is 0.982 versus 0.263. They disagree on whether rotation hurts in 28 versus 146 heads. [Stratum statistics and disagreements](results/hardware/summary.json).
+
+![Real-kernel versus emulator errors and rotation effects for each selected head](results/hardware/real_vs_emulator.svg)
+
+## Why this happens
+
+A common vector in K adds a row-constant score, which exact softmax cancels. Rotation can spread that large vector across channels, coarsening the token-specific residual during rounding. Subtracting the mean key preserves exact attention while reducing that numerical problem. [Derivation](docs/V2_PREDICTION.md).
+
+The APIs are not the emulator: FA3 uses full-sequence head scales, native FP8 tensor-core accumulation and a different probability scale. Sage uses INT8 Q/K, per-channel FP8 V and BF16 transform narrowing. I preserve the same Q/K Hadamard; V is never rotated. These differences change together, so I do not isolate one as the cause. [Settings and provenance](docs/REPRODUCE.md#real-kernel-comparison).
+
+## Earlier prediction study
+
+I [published the predictor and threshold](https://github.com/mottopanikeiku/attention-numerics/tree/prediction-locked) before loading three evaluation models. On their 1,728 emulated heads, AUC was 0.978. It uses operand rounding-noise second moments and ideal softmax/output sensitivity—not measured FP8 outputs. It is expensive, not a runtime controller; unseen error-level R² was 0.50 and pooled transformation-gain R² only 0.003. [CPU results](results/v2/rotation_risk.json), [fit](results/v2/fit.json).
 
 ## Reproduce
 
-CPU only, $0 paid compute (Ryzen AI 5 PRO 340, Linux), 16.4 GB of model downloads. Repeat the last command until it reports completion ([details](docs/REPRODUCE.md)).
+My complete cloud cost bound was **$0.87**, including failed image builds and pilots, not an invoice ([cost](results/hardware/cost.json)). Prepare the operand Volume using the [committed capture pipeline and upload instructions](docs/REPRODUCE.md#real-kernel-comparison): original CPU capture cost $0 paid compute and 16.4 GB of model files. The pinned bundle is private, not currently downloadable; [all input hashes](data/hardware/operands.json) are committed.
 
 ```sh
-uv sync --locked --extra capture --python 3.13
-export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
-timeout 580 nice -n 19 uv run --extra capture python -m study.pipeline --model all --seconds 500
+uv sync --locked --extra capture --extra hardware
+ATTENTION_BACKEND=fa3 ATTENTION_GPU=H100 ATTENTION_MINUTES=15 ATTENTION_MEM_GIB=32 uv run modal run study/hardware/modal_app.py --mode full --output results/hardware/fa3.json.gz
+ATTENTION_BACKEND=sage ATTENTION_GPU=L4 ATTENTION_MINUTES=15 uv run modal run study/hardware/modal_app.py --mode full --output results/hardware/sage.json.gz
 ```
 
-## Limits
+## Limits and prior work
 
-- A CPU emulation of E4M3 rounding, not FlashAttention-3 or SageAttention on FP8 hardware.
-- Six small models, three English texts; heads are not independent, so no confidence intervals.
-- Loss uses teacher forcing on whole windows; key means and tile scales see the full window, unlike a streaming decoder.
-- The predictor needs the ideal attention output: a diagnostic, not a runtime switch.
-- Exact layer-streaming parity was checked on Qwen2.5-0.5B, other architectures on tiny models.
+- Six small checkpoints, three books and one context length; no task-general claim.
+- Batch means/scales may see later tokens; no generation or latency benchmark.
+- Sage has per-head comparisons only; downstream loss was measured for FA3.
+- Exact operand reproduction depends on access to the private bundle or rebuilding matched captures/results.
 
-## Prior work
-
-[FlashAttention-3 §3.3](https://arxiv.org/html/2407.08608v1#S3.SS3) introduced rotation ("incoherent processing") for FP8. [SageAttention](https://arxiv.org/html/2410.02367v9#S4.SS2) and [SageAttention2](https://arxiv.org/html/2411.10958v7#S3.SS1) smooth K and Q; [QuaRot](https://arxiv.org/abs/2404.00456) and [SmoothQuant](https://arxiv.org/abs/2211.10438) fight outliers with rotation and scaling. [Comparison with each](docs/PRIOR_WORK.md), [cold reviews](docs/REVIEW.md), [earlier synthetic studies](docs/MODEL.md).
+Built on [FlashAttention-3](https://arxiv.org/abs/2407.08608), [SageAttention](https://arxiv.org/abs/2410.02367) and [SageAttention2](https://arxiv.org/abs/2411.10958), using their actual published kernels; [attribution and distinctions](docs/PRIOR_WORK.md).
 
 Written with AI coding assistance.

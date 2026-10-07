@@ -1,12 +1,13 @@
 [project]
 name = "attention-numerics"
 version = "0.1.0"
-description = "CPU emulation of rounding error in tiled low-precision attention"
+description = "Measured and emulated rounding error in quantized attention"
 requires-python = ">=3.11"
 dependencies = ["numpy>=2.1,<3", "ml-dtypes>=0.5,<0.6", "matplotlib>=3.9,<4"]
 
 [project.optional-dependencies]
 capture = ["torch==2.10.0", "transformers==4.57.6", "safetensors>=0.7,<0.8"]
+hardware = ["modal==1.5.3"]
 
 [tool.uv.sources]
 torch = { index = "pytorch-cpu" }
