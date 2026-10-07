@@ -1,0 +1,753 @@
+{
+  "schema_version": 2,
+  "claim_labels": {
+    "EXT": "Pinned upstream metadata collected before weight downloads; local byte checks are recorded under results/v2/downloads.",
+    "MEAS": "Locally computed hashes where byte equality was confirmed against upstream git blob SHA1.",
+    "INFERENCE": "Derived head dimension or arithmetic totals; not an experimental outcome."
+  },
+  "models": [
+    {
+      "key": "qwen05",
+      "model_id": "Qwen/Qwen2.5-0.5B-Instruct",
+      "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "family": "qwen",
+      "architecture": "qwen2",
+      "config": {
+        "model_type": "qwen2",
+        "architectures": [
+          "Qwen2ForCausalLM"
+        ],
+        "num_hidden_layers": 24,
+        "num_attention_heads": 14,
+        "num_key_value_heads": 2,
+        "hidden_size": 896,
+        "intermediate_size": 4864,
+        "vocab_size": 151936,
+        "max_position_embeddings": 32768,
+        "rope_theta": 1000000.0,
+        "torch_dtype": "bfloat16",
+        "tie_word_embeddings": true,
+        "head_dim": 64,
+        "head_dim_evidence": "INFERENCE: hidden_size / num_attention_heads"
+      },
+      "weight_bytes": 988097824,
+      "weight_dtype": "BF16",
+      "parameter_count": 494032768,
+      "files": [
+        {
+          "path": "LICENSE",
+          "bytes": 11343,
+          "sha256": null,
+          "git_blob_sha1": "6634c8cc3133b3848ec74b9f275acaaa1ea618ab",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/7ae557604adf67be50417f59c2c2f167def9a775/LICENSE",
+          "role": "license",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "README.md",
+          "bytes": 4917,
+          "sha256": null,
+          "git_blob_sha1": "4b8373851d093eb9f3017443f27781c6971eff24",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/7ae557604adf67be50417f59c2c2f167def9a775/README.md",
+          "role": "model_card",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "config.json",
+          "bytes": 659,
+          "sha256": "18e18afcaccafade98daf13a54092927904649e1dd4eba8299ab717d5d94ff45",
+          "git_blob_sha1": "0dbb161213629a23f0fc00ef286e6b1e366d180f",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/7ae557604adf67be50417f59c2c2f167def9a775/config.json",
+          "role": "config",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "generation_config.json",
+          "bytes": 242,
+          "sha256": "e558847a8b4402616f1273797b015104dc266fe4b520056fca88823ba8f8ebe6",
+          "git_blob_sha1": "dfc11073787daf1b0f9c0f1499487ab5f4c93738",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/7ae557604adf67be50417f59c2c2f167def9a775/generation_config.json",
+          "role": "config",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "merges.txt",
+          "bytes": 1671839,
+          "sha256": null,
+          "git_blob_sha1": "20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/7ae557604adf67be50417f59c2c2f167def9a775/merges.txt",
+          "role": "tokenizer",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "model.safetensors",
+          "bytes": 988097824,
+          "sha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+          "git_blob_sha1": "d7db405a3f0d9bf1ba5bdd4e4211db8022ebe4eb",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/7ae557604adf67be50417f59c2c2f167def9a775/model.safetensors",
+          "role": "weights",
+          "sha256_source": "huggingface_lfs_metadata"
+        },
+        {
+          "path": "tokenizer.json",
+          "bytes": 7031645,
+          "sha256": null,
+          "git_blob_sha1": "443909a61d429dff23010e5bddd28ff530edda00",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/7ae557604adf67be50417f59c2c2f167def9a775/tokenizer.json",
+          "role": "tokenizer",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "tokenizer_config.json",
+          "bytes": 7305,
+          "sha256": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583",
+          "git_blob_sha1": "07bfe0640cb5a0037f9322287fbfc682806cf672",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/7ae557604adf67be50417f59c2c2f167def9a775/tokenizer_config.json",
+          "role": "tokenizer",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "vocab.json",
+          "bytes": 2776833,
+          "sha256": null,
+          "git_blob_sha1": "4783fe10ac3adce15ac8f358ef5462739852c569",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/7ae557604adf67be50417f59c2c2f167def9a775/vocab.json",
+          "role": "tokenizer",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        }
+      ],
+      "license": {
+        "spdx": "Apache-2.0",
+        "source_url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/7ae557604adf67be50417f59c2c2f167def9a775/README.md",
+        "license_url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/7ae557604adf67be50417f59c2c2f167def9a775/LICENSE"
+      },
+      "sources": [
+        "https://huggingface.co/api/models/Qwen/Qwen2.5-0.5B-Instruct/revision/7ae557604adf67be50417f59c2c2f167def9a775?blobs=true",
+        "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/7ae557604adf67be50417f59c2c2f167def9a775/config.json",
+        "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/7ae557604adf67be50417f59c2c2f167def9a775/README.md"
+      ],
+      "claim_label": "EXT"
+    },
+    {
+      "key": "smol036",
+      "model_id": "HuggingFaceTB/SmolLM2-360M-Instruct",
+      "revision": "a10cc1512eabd3dde888204e902eca88bddb4951",
+      "family": "smol",
+      "architecture": "llama",
+      "config": {
+        "model_type": "llama",
+        "architectures": [
+          "LlamaForCausalLM"
+        ],
+        "num_hidden_layers": 32,
+        "num_attention_heads": 15,
+        "num_key_value_heads": 5,
+        "hidden_size": 960,
+        "intermediate_size": 2560,
+        "vocab_size": 49152,
+        "max_position_embeddings": 8192,
+        "rope_theta": 100000,
+        "torch_dtype": "bfloat16",
+        "tie_word_embeddings": true,
+        "head_dim": 64,
+        "head_dim_evidence": "INFERENCE: hidden_size / num_attention_heads"
+      },
+      "weight_bytes": 723674912,
+      "weight_dtype": "BF16",
+      "parameter_count": 361821120,
+      "files": [
+        {
+          "path": "README.md",
+          "bytes": 7304,
+          "sha256": null,
+          "git_blob_sha1": "5ed0ef7d7e4c1304d542a073ff5767990d410e2f",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct/resolve/a10cc1512eabd3dde888204e902eca88bddb4951/README.md",
+          "role": "model_card",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "config.json",
+          "bytes": 846,
+          "sha256": "224f72354f10d617a359cc82ad15a3c96e866b9b2ffadb81997eeea9e88e22ee",
+          "git_blob_sha1": "4f2ae86545bb5c1d4fcc55644deef86be50a7dee",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct/resolve/a10cc1512eabd3dde888204e902eca88bddb4951/config.json",
+          "role": "config",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "generation_config.json",
+          "bytes": 132,
+          "sha256": "87b916edaaab66b3899b9d0dd0752727dff6666686da0504d89ae0a6e055a013",
+          "git_blob_sha1": "da6c4d71a43aa7e6f785bdbb28ea5025438a73fa",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct/resolve/a10cc1512eabd3dde888204e902eca88bddb4951/generation_config.json",
+          "role": "config",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "merges.txt",
+          "bytes": 466391,
+          "sha256": null,
+          "git_blob_sha1": "69503b13f727ba3812b6803e97442a6de05ef5eb",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct/resolve/a10cc1512eabd3dde888204e902eca88bddb4951/merges.txt",
+          "role": "tokenizer",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "model.safetensors",
+          "bytes": 723674912,
+          "sha256": "e6bffe7435d7ddc10fd3b9a9efd429dafbacb1cb17015fb5562664e7532bf86e",
+          "git_blob_sha1": "5e3cd2324bc51fbe72a42fc00f3ccd8da230cc04",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct/resolve/a10cc1512eabd3dde888204e902eca88bddb4951/model.safetensors",
+          "role": "weights",
+          "sha256_source": "huggingface_lfs_metadata"
+        },
+        {
+          "path": "special_tokens_map.json",
+          "bytes": 655,
+          "sha256": "2b7379f3ae813529281a5c602bc5a11c1d4e0a99107aaa597fe936c1e813ca52",
+          "git_blob_sha1": "44719d2e365acac0637fd25a3acf46494ca45940",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct/resolve/a10cc1512eabd3dde888204e902eca88bddb4951/special_tokens_map.json",
+          "role": "tokenizer",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "tokenizer.json",
+          "bytes": 2104556,
+          "sha256": null,
+          "git_blob_sha1": "f922b1797f0c88e71addc8393787831f2477a4bd",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct/resolve/a10cc1512eabd3dde888204e902eca88bddb4951/tokenizer.json",
+          "role": "tokenizer",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "tokenizer_config.json",
+          "bytes": 3764,
+          "sha256": "4ec77d44f62efeb38d7e044a1db318f6a939438425312dfa333b8382dbad98df",
+          "git_blob_sha1": "8c7b22013909450429303ed10be4398bd63f5457",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct/resolve/a10cc1512eabd3dde888204e902eca88bddb4951/tokenizer_config.json",
+          "role": "tokenizer",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "vocab.json",
+          "bytes": 800662,
+          "sha256": null,
+          "git_blob_sha1": "0ad5ecc2035b7031b88afb544ee95e2d49baa484",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct/resolve/a10cc1512eabd3dde888204e902eca88bddb4951/vocab.json",
+          "role": "tokenizer",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        }
+      ],
+      "license": {
+        "spdx": "Apache-2.0",
+        "source_url": "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct/resolve/a10cc1512eabd3dde888204e902eca88bddb4951/README.md"
+      },
+      "sources": [
+        "https://huggingface.co/api/models/HuggingFaceTB/SmolLM2-360M-Instruct/revision/a10cc1512eabd3dde888204e902eca88bddb4951?blobs=true",
+        "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct/resolve/a10cc1512eabd3dde888204e902eca88bddb4951/config.json",
+        "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct/resolve/a10cc1512eabd3dde888204e902eca88bddb4951/README.md"
+      ],
+      "claim_label": "EXT"
+    },
+    {
+      "key": "qwen15",
+      "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+      "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+      "family": "qwen",
+      "architecture": "qwen2",
+      "config": {
+        "model_type": "qwen2",
+        "architectures": [
+          "Qwen2ForCausalLM"
+        ],
+        "num_hidden_layers": 28,
+        "num_attention_heads": 12,
+        "num_key_value_heads": 2,
+        "hidden_size": 1536,
+        "intermediate_size": 8960,
+        "vocab_size": 151936,
+        "max_position_embeddings": 32768,
+        "rope_theta": 1000000.0,
+        "torch_dtype": "bfloat16",
+        "tie_word_embeddings": true,
+        "head_dim": 128,
+        "head_dim_evidence": "INFERENCE: hidden_size / num_attention_heads"
+      },
+      "weight_bytes": 3087467144,
+      "weight_dtype": "BF16",
+      "parameter_count": 1543714304,
+      "files": [
+        {
+          "path": "LICENSE",
+          "bytes": 11343,
+          "sha256": null,
+          "git_blob_sha1": "6634c8cc3133b3848ec74b9f275acaaa1ea618ab",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/resolve/989aa7980e4cf806f80c7fef2b1adb7bc71aa306/LICENSE",
+          "role": "license",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "README.md",
+          "bytes": 4917,
+          "sha256": null,
+          "git_blob_sha1": "b3327a17e2ffa52e0fd941a2810b18a9fd0e7d94",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/resolve/989aa7980e4cf806f80c7fef2b1adb7bc71aa306/README.md",
+          "role": "model_card",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "config.json",
+          "bytes": 660,
+          "sha256": "98d2ff8cc47488d08a2b0b3acf4eb99ef210779b42bd48605f6b8e36acdbf670",
+          "git_blob_sha1": "f81ead14ab072d65a07817f83a3ee0e5a1890d10",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/resolve/989aa7980e4cf806f80c7fef2b1adb7bc71aa306/config.json",
+          "role": "config",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "generation_config.json",
+          "bytes": 242,
+          "sha256": "e558847a8b4402616f1273797b015104dc266fe4b520056fca88823ba8f8ebe6",
+          "git_blob_sha1": "dfc11073787daf1b0f9c0f1499487ab5f4c93738",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/resolve/989aa7980e4cf806f80c7fef2b1adb7bc71aa306/generation_config.json",
+          "role": "config",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "merges.txt",
+          "bytes": 1671839,
+          "sha256": null,
+          "git_blob_sha1": "20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/resolve/989aa7980e4cf806f80c7fef2b1adb7bc71aa306/merges.txt",
+          "role": "tokenizer",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "model.safetensors",
+          "bytes": 3087467144,
+          "sha256": "dd924a11b4c220f385b51ffa522daea7c9f3d850e31b162bb5661df483c6d3ee",
+          "git_blob_sha1": "9127f71e7314df0064f469223749e5f237e06463",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/resolve/989aa7980e4cf806f80c7fef2b1adb7bc71aa306/model.safetensors",
+          "role": "weights",
+          "sha256_source": "huggingface_lfs_metadata"
+        },
+        {
+          "path": "tokenizer.json",
+          "bytes": 7031645,
+          "sha256": null,
+          "git_blob_sha1": "443909a61d429dff23010e5bddd28ff530edda00",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/resolve/989aa7980e4cf806f80c7fef2b1adb7bc71aa306/tokenizer.json",
+          "role": "tokenizer",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "tokenizer_config.json",
+          "bytes": 7305,
+          "sha256": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583",
+          "git_blob_sha1": "07bfe0640cb5a0037f9322287fbfc682806cf672",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/resolve/989aa7980e4cf806f80c7fef2b1adb7bc71aa306/tokenizer_config.json",
+          "role": "tokenizer",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "vocab.json",
+          "bytes": 2776833,
+          "sha256": null,
+          "git_blob_sha1": "4783fe10ac3adce15ac8f358ef5462739852c569",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/resolve/989aa7980e4cf806f80c7fef2b1adb7bc71aa306/vocab.json",
+          "role": "tokenizer",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        }
+      ],
+      "license": {
+        "spdx": "Apache-2.0",
+        "source_url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/resolve/989aa7980e4cf806f80c7fef2b1adb7bc71aa306/README.md",
+        "license_url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/resolve/989aa7980e4cf806f80c7fef2b1adb7bc71aa306/LICENSE"
+      },
+      "sources": [
+        "https://huggingface.co/api/models/Qwen/Qwen2.5-1.5B-Instruct/revision/989aa7980e4cf806f80c7fef2b1adb7bc71aa306?blobs=true",
+        "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/resolve/989aa7980e4cf806f80c7fef2b1adb7bc71aa306/config.json",
+        "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/resolve/989aa7980e4cf806f80c7fef2b1adb7bc71aa306/README.md"
+      ],
+      "claim_label": "EXT"
+    },
+    {
+      "key": "smol17",
+      "model_id": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+      "revision": "31b70e2e869a7173562077fd711b654946d38674",
+      "family": "smol",
+      "architecture": "llama",
+      "config": {
+        "model_type": "llama",
+        "architectures": [
+          "LlamaForCausalLM"
+        ],
+        "num_hidden_layers": 24,
+        "num_attention_heads": 32,
+        "num_key_value_heads": 32,
+        "hidden_size": 2048,
+        "intermediate_size": 8192,
+        "vocab_size": 49152,
+        "max_position_embeddings": 8192,
+        "rope_theta": 130000,
+        "torch_dtype": "bfloat16",
+        "tie_word_embeddings": true,
+        "head_dim": 64,
+        "head_dim_evidence": "INFERENCE: hidden_size / num_attention_heads"
+      },
+      "weight_bytes": 3422777952,
+      "weight_dtype": "BF16",
+      "parameter_count": 1711376384,
+      "files": [
+        {
+          "path": "README.md",
+          "bytes": 14928,
+          "sha256": null,
+          "git_blob_sha1": "0c7f9199785f566968e8759a10eaf5c69223c25b",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct/resolve/31b70e2e869a7173562077fd711b654946d38674/README.md",
+          "role": "model_card",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "config.json",
+          "bytes": 908,
+          "sha256": "994f50b16abb4ae00880baefe03c10260b5bd608d2bf586f7056ca05a534feea",
+          "git_blob_sha1": "207e75b189e8d8b72a8966dddcce5502f653e5ba",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct/resolve/31b70e2e869a7173562077fd711b654946d38674/config.json",
+          "role": "config",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "generation_config.json",
+          "bytes": 132,
+          "sha256": "87b916edaaab66b3899b9d0dd0752727dff6666686da0504d89ae0a6e055a013",
+          "git_blob_sha1": "da6c4d71a43aa7e6f785bdbb28ea5025438a73fa",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct/resolve/31b70e2e869a7173562077fd711b654946d38674/generation_config.json",
+          "role": "config",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "merges.txt",
+          "bytes": 466391,
+          "sha256": null,
+          "git_blob_sha1": "69503b13f727ba3812b6803e97442a6de05ef5eb",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct/resolve/31b70e2e869a7173562077fd711b654946d38674/merges.txt",
+          "role": "tokenizer",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "model.safetensors",
+          "bytes": 3422777952,
+          "sha256": "f55217be716b6a997b97b9d8d7eb6fad02e00858f5010ec24f64603c3a98a0e8",
+          "git_blob_sha1": "f96523abc9c9bcd1ee9375f137dddd420372c258",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct/resolve/31b70e2e869a7173562077fd711b654946d38674/model.safetensors",
+          "role": "weights",
+          "sha256_source": "huggingface_lfs_metadata"
+        },
+        {
+          "path": "special_tokens_map.json",
+          "bytes": 655,
+          "sha256": "2b7379f3ae813529281a5c602bc5a11c1d4e0a99107aaa597fe936c1e813ca52",
+          "git_blob_sha1": "44719d2e365acac0637fd25a3acf46494ca45940",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct/resolve/31b70e2e869a7173562077fd711b654946d38674/special_tokens_map.json",
+          "role": "tokenizer",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "tokenizer.json",
+          "bytes": 2104556,
+          "sha256": null,
+          "git_blob_sha1": "f922b1797f0c88e71addc8393787831f2477a4bd",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct/resolve/31b70e2e869a7173562077fd711b654946d38674/tokenizer.json",
+          "role": "tokenizer",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "tokenizer_config.json",
+          "bytes": 3764,
+          "sha256": "4ec77d44f62efeb38d7e044a1db318f6a939438425312dfa333b8382dbad98df",
+          "git_blob_sha1": "8c7b22013909450429303ed10be4398bd63f5457",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct/resolve/31b70e2e869a7173562077fd711b654946d38674/tokenizer_config.json",
+          "role": "tokenizer",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "vocab.json",
+          "bytes": 800662,
+          "sha256": null,
+          "git_blob_sha1": "0ad5ecc2035b7031b88afb544ee95e2d49baa484",
+          "url": "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct/resolve/31b70e2e869a7173562077fd711b654946d38674/vocab.json",
+          "role": "tokenizer",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        }
+      ],
+      "license": {
+        "spdx": "Apache-2.0",
+        "source_url": "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct/resolve/31b70e2e869a7173562077fd711b654946d38674/README.md"
+      },
+      "sources": [
+        "https://huggingface.co/api/models/HuggingFaceTB/SmolLM2-1.7B-Instruct/revision/31b70e2e869a7173562077fd711b654946d38674?blobs=true",
+        "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct/resolve/31b70e2e869a7173562077fd711b654946d38674/config.json",
+        "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct/resolve/31b70e2e869a7173562077fd711b654946d38674/README.md"
+      ],
+      "claim_label": "EXT"
+    },
+    {
+      "key": "tiny11",
+      "model_id": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+      "revision": "fe8a4ea1ffedaf415f4da2f062534de366a451e6",
+      "family": "tinyllama",
+      "architecture": "llama",
+      "config": {
+        "model_type": "llama",
+        "architectures": [
+          "LlamaForCausalLM"
+        ],
+        "num_hidden_layers": 22,
+        "num_attention_heads": 32,
+        "num_key_value_heads": 4,
+        "hidden_size": 2048,
+        "intermediate_size": 5632,
+        "vocab_size": 32000,
+        "max_position_embeddings": 2048,
+        "rope_theta": 10000.0,
+        "torch_dtype": "bfloat16",
+        "tie_word_embeddings": false,
+        "head_dim": 64,
+        "head_dim_evidence": "INFERENCE: hidden_size / num_attention_heads"
+      },
+      "weight_bytes": 2200119864,
+      "weight_dtype": "BF16",
+      "parameter_count": 1100048384,
+      "files": [
+        {
+          "path": "README.md",
+          "bytes": 3196,
+          "sha256": null,
+          "git_blob_sha1": "9737c9ce5074907aa44d575918c5367cd877471f",
+          "url": "https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0/resolve/fe8a4ea1ffedaf415f4da2f062534de366a451e6/README.md",
+          "role": "model_card",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "config.json",
+          "bytes": 608,
+          "sha256": "486bedda3a6988332e60d9638a09ca4b260d34ebcf1b19e22cf3b140b63d8fe9",
+          "git_blob_sha1": "4ea05f1bc289d48ba9b92eea2f58ad8acd3dce5d",
+          "url": "https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0/resolve/fe8a4ea1ffedaf415f4da2f062534de366a451e6/config.json",
+          "role": "config",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "generation_config.json",
+          "bytes": 124,
+          "sha256": "18046d04f5bd8b4998095ecabdd17a1bf0053d9acdccead4a05be4a3575f3c5c",
+          "git_blob_sha1": "768e95e5b4dada726d7631277a4a87ecbb236f70",
+          "url": "https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0/resolve/fe8a4ea1ffedaf415f4da2f062534de366a451e6/generation_config.json",
+          "role": "config",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "model.safetensors",
+          "bytes": 2200119864,
+          "sha256": "6e6001da2106d4757498752a021df6c2bdc332c650aae4bae6b0c004dcf14933",
+          "git_blob_sha1": "2590fdb91785d0aba3e45388b12cf95f5f29a219",
+          "url": "https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0/resolve/fe8a4ea1ffedaf415f4da2f062534de366a451e6/model.safetensors",
+          "role": "weights",
+          "sha256_source": "huggingface_lfs_metadata"
+        },
+        {
+          "path": "special_tokens_map.json",
+          "bytes": 551,
+          "sha256": "82d96d7a9e6ced037f12394b7ea6a5b02e6ca87e0d11edaa8d60d9be857ce7db",
+          "git_blob_sha1": "492d4b2966a1763442d426d880dbc29f94906e4c",
+          "url": "https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0/resolve/fe8a4ea1ffedaf415f4da2f062534de366a451e6/special_tokens_map.json",
+          "role": "tokenizer",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "tokenizer.json",
+          "bytes": 1842767,
+          "sha256": null,
+          "git_blob_sha1": "a6e931b92caff4c79c5c56282f1e89569a0ae558",
+          "url": "https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0/resolve/fe8a4ea1ffedaf415f4da2f062534de366a451e6/tokenizer.json",
+          "role": "tokenizer",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "tokenizer.model",
+          "bytes": 499723,
+          "sha256": "9e556afd44213b6bd1be2b850ebbbd98f5481437a8021afaf58ee7fb1818d347",
+          "git_blob_sha1": "6c00c742ce03c627d6cd5b795984876fa49fa899",
+          "url": "https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0/resolve/fe8a4ea1ffedaf415f4da2f062534de366a451e6/tokenizer.model",
+          "role": "tokenizer",
+          "sha256_source": "huggingface_lfs_metadata"
+        },
+        {
+          "path": "tokenizer_config.json",
+          "bytes": 1289,
+          "sha256": "7b41ba7d0eb91e77914ca3dafde559ea3e19878769b7e68409e89bed5222e77a",
+          "git_blob_sha1": "fa96b85858f4053b0142a18e2b09dbe94e3fae46",
+          "url": "https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0/resolve/fe8a4ea1ffedaf415f4da2f062534de366a451e6/tokenizer_config.json",
+          "role": "tokenizer",
+          "sha256_source": "byte_exact_git_blob_verified"
+        }
+      ],
+      "license": {
+        "spdx": "Apache-2.0",
+        "source_url": "https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0/resolve/fe8a4ea1ffedaf415f4da2f062534de366a451e6/README.md"
+      },
+      "sources": [
+        "https://huggingface.co/api/models/TinyLlama/TinyLlama-1.1B-Chat-v1.0/revision/fe8a4ea1ffedaf415f4da2f062534de366a451e6?blobs=true",
+        "https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0/resolve/fe8a4ea1ffedaf415f4da2f062534de366a451e6/config.json",
+        "https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0/resolve/fe8a4ea1ffedaf415f4da2f062534de366a451e6/README.md"
+      ],
+      "claim_label": "EXT"
+    },
+    {
+      "key": "olmo1",
+      "model_id": "allenai/OLMo-2-0425-1B",
+      "revision": "a1847dff35000b4271fa70afc5db10fd29fedbdf",
+      "family": "olmo",
+      "architecture": "olmo2",
+      "config": {
+        "model_type": "olmo2",
+        "architectures": [
+          "Olmo2ForCausalLM"
+        ],
+        "num_hidden_layers": 16,
+        "num_attention_heads": 16,
+        "num_key_value_heads": 16,
+        "hidden_size": 2048,
+        "intermediate_size": 8192,
+        "vocab_size": 100352,
+        "max_position_embeddings": 4096,
+        "rope_theta": 500000,
+        "torch_dtype": "float32",
+        "tie_word_embeddings": false,
+        "head_dim": 128,
+        "head_dim_evidence": "INFERENCE: hidden_size / num_attention_heads"
+      },
+      "weight_bytes": 5939687552,
+      "weight_dtype": "F32",
+      "parameter_count": 1484916736,
+      "files": [
+        {
+          "path": "README.md",
+          "bytes": 12892,
+          "sha256": null,
+          "git_blob_sha1": "f4f00dd2b735b5127e40f54196d8ded341102da5",
+          "url": "https://huggingface.co/allenai/OLMo-2-0425-1B/resolve/a1847dff35000b4271fa70afc5db10fd29fedbdf/README.md",
+          "role": "model_card",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "config.json",
+          "bytes": 623,
+          "sha256": "3dc581384d61b3366fc34a95d12c20e595014ea62352469c17c3e3a77f32882a",
+          "git_blob_sha1": "0e6dffcd9b40b734014ef9909d6bc7b62c4c1fe1",
+          "url": "https://huggingface.co/allenai/OLMo-2-0425-1B/resolve/a1847dff35000b4271fa70afc5db10fd29fedbdf/config.json",
+          "role": "config",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "generation_config.json",
+          "bytes": 121,
+          "sha256": "6b4e5d0f5199345ef9e1f55139f13451f65eb5bd308a40718df1874ee2998ecf",
+          "git_blob_sha1": "5b349a5ba3b23008b50aaed4b394b269a138e6f8",
+          "url": "https://huggingface.co/allenai/OLMo-2-0425-1B/resolve/a1847dff35000b4271fa70afc5db10fd29fedbdf/generation_config.json",
+          "role": "config",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "merges.txt",
+          "bytes": 916646,
+          "sha256": null,
+          "git_blob_sha1": "354558edcdbd64ca7abd407b8be3d5d09d39d781",
+          "url": "https://huggingface.co/allenai/OLMo-2-0425-1B/resolve/a1847dff35000b4271fa70afc5db10fd29fedbdf/merges.txt",
+          "role": "tokenizer",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "model-00001-of-00002.safetensors",
+          "bytes": 4983360992,
+          "sha256": "c52e4ac8bf4867e698d908f9e8c2b84aa891b91dff066d46bf2a7cf453ad77fb",
+          "git_blob_sha1": "b9ffb9d713594e086304ee87465d8486fd2f7e77",
+          "url": "https://huggingface.co/allenai/OLMo-2-0425-1B/resolve/a1847dff35000b4271fa70afc5db10fd29fedbdf/model-00001-of-00002.safetensors",
+          "role": "weights",
+          "sha256_source": "huggingface_lfs_metadata"
+        },
+        {
+          "path": "model-00002-of-00002.safetensors",
+          "bytes": 956326560,
+          "sha256": "5f80762572fe28aca49b01b98895d96ca529b9792fc10925a977a161ad768d30",
+          "git_blob_sha1": "ba23e835a4281771786fd8623cc5988f545014f3",
+          "url": "https://huggingface.co/allenai/OLMo-2-0425-1B/resolve/a1847dff35000b4271fa70afc5db10fd29fedbdf/model-00002-of-00002.safetensors",
+          "role": "weights",
+          "sha256_source": "huggingface_lfs_metadata"
+        },
+        {
+          "path": "model.safetensors.index.json",
+          "bytes": 14873,
+          "sha256": "704e57695805a67b0c43220e60e31cf43948c387f39799b82b260bb4df8180e6",
+          "git_blob_sha1": "64893bc51d60e692025d2d041ac1d28a22284e2c",
+          "url": "https://huggingface.co/allenai/OLMo-2-0425-1B/resolve/a1847dff35000b4271fa70afc5db10fd29fedbdf/model.safetensors.index.json",
+          "role": "config",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "special_tokens_map.json",
+          "bytes": 125,
+          "sha256": "3c6bf7c09d5473c303cee8575a22bb51e5153c17d177a721b43cd4785c6d09ae",
+          "git_blob_sha1": "68a9a42af03ba45d68358595d49dc70b10159c12",
+          "url": "https://huggingface.co/allenai/OLMo-2-0425-1B/resolve/a1847dff35000b4271fa70afc5db10fd29fedbdf/special_tokens_map.json",
+          "role": "tokenizer",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "tokenizer.json",
+          "bytes": 7137177,
+          "sha256": null,
+          "git_blob_sha1": "5fe172127988c3709a49d8d2ce20e11bb266cd57",
+          "url": "https://huggingface.co/allenai/OLMo-2-0425-1B/resolve/a1847dff35000b4271fa70afc5db10fd29fedbdf/tokenizer.json",
+          "role": "tokenizer",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        },
+        {
+          "path": "tokenizer_config.json",
+          "bytes": 4345,
+          "sha256": "91c69c665697785ace4ec7dbd159e1839bc9bb5033ab05a56bb0547521dc9ab0",
+          "git_blob_sha1": "f9e5ee94cf605b587aa8021f7e27e7d5381c07b7",
+          "url": "https://huggingface.co/allenai/OLMo-2-0425-1B/resolve/a1847dff35000b4271fa70afc5db10fd29fedbdf/tokenizer_config.json",
+          "role": "tokenizer",
+          "sha256_source": "byte_exact_git_blob_verified"
+        },
+        {
+          "path": "vocab.json",
+          "bytes": 1611056,
+          "sha256": null,
+          "git_blob_sha1": "51135344eec01a62fc4deaca39c72ac08f5b9709",
+          "url": "https://huggingface.co/allenai/OLMo-2-0425-1B/resolve/a1847dff35000b4271fa70afc5db10fd29fedbdf/vocab.json",
+          "role": "tokenizer",
+          "sha256_source": "unknown; git blob SHA1 supplied"
+        }
+      ],
+      "license": {
+        "spdx": "Apache-2.0",
+        "source_url": "https://huggingface.co/allenai/OLMo-2-0425-1B/resolve/a1847dff35000b4271fa70afc5db10fd29fedbdf/README.md"
+      },
+      "sources": [
+        "https://huggingface.co/api/models/allenai/OLMo-2-0425-1B/revision/a1847dff35000b4271fa70afc5db10fd29fedbdf?blobs=true",
+        "https://huggingface.co/allenai/OLMo-2-0425-1B/resolve/a1847dff35000b4271fa70afc5db10fd29fedbdf/config.json",
+        "https://huggingface.co/allenai/OLMo-2-0425-1B/resolve/a1847dff35000b4271fa70afc5db10fd29fedbdf/README.md"
+      ],
+      "claim_label": "EXT"
+    }
+  ],
+  "total_weight_bytes": 16361825248,
+  "weight_limit_bytes": 20000000000,
+  "within_weight_limit": true,
+  "total_evidence": "INFERENCE: sum of requested safetensors sibling byte sizes",
+  "download_policy": "Only root-level safetensors and listed configuration/tokenizer assets; no ONNX, training artifacts, alternate weight formats, or subdirectories.",
+  "hash_policy": "Weight SHA256 values pin upstream LFS objects; downloads verify bytes before use and record local checks under results/v2/downloads. Null metadata SHA256 means not obtained; git_blob_sha1 still pins and verifies the small asset's content."
+}

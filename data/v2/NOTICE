@@ -1,0 +1,68 @@
+Attention numerics: v2 input sources
+
+Texts (EXT: source attribution and copyright status)
+
+alice.txt: Lewis Carroll, Alice's Adventures in Wonderland.
+Source: https://www.gutenberg.org/cache/epub/11/pg11.txt
+Catalog: https://www.gutenberg.org/ebooks/11
+
+pride.txt: Jane Austen, Pride and Prejudice.
+Source: https://www.gutenberg.org/cache/epub/1342/pg1342.txt
+Catalog: https://www.gutenberg.org/ebooks/1342
+
+moby.txt: Herman Melville, Moby Dick; Or, The Whale.
+Source: https://www.gutenberg.org/cache/epub/2701/pg2701.txt
+Catalog: https://www.gutenberg.org/ebooks/2701
+
+Each source catalog identifies the underlying work as public domain in the
+USA. This qualification is jurisdiction-specific, not a worldwide claim.
+Check applicable local law before reuse outside the USA. Only contiguous
+literary-body excerpts are reproduced, not the source ebook's license or
+promotional boilerplate. Source links identify provenance; this project is
+not endorsed by the source publisher. The excerpts retain internal source
+content, including chapter headings and any printed illustration captions.
+Line endings are normalized to LF. No text is repeated or generated to meet
+length requirements. data/v2/texts.json records exact extraction boundaries,
+UTF-8 SHA256 hashes, byte lengths, and whitespace-separated word counts
+(MEAS). Token counts remain unknown until checked by each model tokenizer.
+
+Models (EXT: pinned repository metadata and model-card license declarations)
+
+All six model cards declare Apache-2.0. No model weights, tokenizer files,
+or upstream implementation code are redistributed in this directory.
+Pinned cards and available license texts:
+
+Qwen/Qwen2.5-0.5B-Instruct
+https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/7ae557604adf67be50417f59c2c2f167def9a775/README.md
+https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/7ae557604adf67be50417f59c2c2f167def9a775/LICENSE
+
+Qwen/Qwen2.5-1.5B-Instruct
+https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/resolve/989aa7980e4cf806f80c7fef2b1adb7bc71aa306/README.md
+https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/resolve/989aa7980e4cf806f80c7fef2b1adb7bc71aa306/LICENSE
+
+HuggingFaceTB/SmolLM2-360M-Instruct
+https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct/resolve/a10cc1512eabd3dde888204e902eca88bddb4951/README.md
+
+HuggingFaceTB/SmolLM2-1.7B-Instruct
+https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct/resolve/31b70e2e869a7173562077fd711b654946d38674/README.md
+
+TinyLlama/TinyLlama-1.1B-Chat-v1.0
+https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0/resolve/fe8a4ea1ffedaf415f4da2f062534de366a451e6/README.md
+
+allenai/OLMo-2-0425-1B
+https://huggingface.co/allenai/OLMo-2-0425-1B/resolve/a1847dff35000b4271fa70afc5db10fd29fedbdf/README.md
+
+The manifest lists only requested root-level safetensors weights and
+configuration, tokenizer, license, and model-card assets. It excludes ONNX,
+training artifacts, and alternate weight formats. Weight SHA256 values
+are upstream LFS metadata, not local verification of weight downloads.
+Small-file SHA256 values are supplied only when the exact reconstructed
+bytes match the pinned upstream git blob SHA1 (MEAS); otherwise SHA256 is
+unknown and the git blob SHA1 is supplied. Downloaded files must be checked
+before use. Architecture values come from pinned config.json files (EXT);
+head dimensions are explicitly marked as derived when not provided
+(INFERENCE). Seven safetensors files across six models total 16,361,825,248 bytes
+(INFERENCE: arithmetic sum of upstream sibling sizes), below a decimal
+20,000,000,000-byte weight budget. Configuration and tokenizer files are
+additional to this weight-only total. OLMo's two shards store F32 weights;
+do not load the complete checkpoint at once.

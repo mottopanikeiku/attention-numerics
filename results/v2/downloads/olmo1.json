@@ -1,0 +1,65 @@
+{
+  "model": "olmo1",
+  "model_id": "allenai/OLMo-2-0425-1B",
+  "revision": "a1847dff35000b4271fa70afc5db10fd29fedbdf",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 12892,
+      "sha256": "8e09b3ce741d945b340e51530dd95f49c646a210d0342b1a831a19e36928758b"
+    },
+    {
+      "path": "config.json",
+      "bytes": 623,
+      "sha256": "3dc581384d61b3366fc34a95d12c20e595014ea62352469c17c3e3a77f32882a"
+    },
+    {
+      "path": "generation_config.json",
+      "bytes": 121,
+      "sha256": "6b4e5d0f5199345ef9e1f55139f13451f65eb5bd308a40718df1874ee2998ecf"
+    },
+    {
+      "path": "merges.txt",
+      "bytes": 916646,
+      "sha256": "b6fe424e334903f7fb84d3a106d9730455f4744b9fe3c21ee136d97a00e72502"
+    },
+    {
+      "path": "model-00001-of-00002.safetensors",
+      "bytes": 4983360992,
+      "sha256": "c52e4ac8bf4867e698d908f9e8c2b84aa891b91dff066d46bf2a7cf453ad77fb"
+    },
+    {
+      "path": "model-00002-of-00002.safetensors",
+      "bytes": 956326560,
+      "sha256": "5f80762572fe28aca49b01b98895d96ca529b9792fc10925a977a161ad768d30"
+    },
+    {
+      "path": "model.safetensors.index.json",
+      "bytes": 14873,
+      "sha256": "704e57695805a67b0c43220e60e31cf43948c387f39799b82b260bb4df8180e6"
+    },
+    {
+      "path": "special_tokens_map.json",
+      "bytes": 125,
+      "sha256": "3c6bf7c09d5473c303cee8575a22bb51e5153c17d177a721b43cd4785c6d09ae"
+    },
+    {
+      "path": "tokenizer.json",
+      "bytes": 7137177,
+      "sha256": "73fd5254624f39a88e3faac6a8e11300fc3c735ed37880d4f4f08db898eaecca"
+    },
+    {
+      "path": "tokenizer_config.json",
+      "bytes": 4345,
+      "sha256": "91c69c665697785ace4ec7dbd159e1839bc9bb5033ab05a56bb0547521dc9ab0"
+    },
+    {
+      "path": "vocab.json",
+      "bytes": 1611056,
+      "sha256": "9e14712c91b37c7aab74b1306baa46ac342d620637a4b44523cdc3aec7d24195"
+    }
+  ],
+  "weight_bytes": 5939687552,
+  "new_weight_bytes": 5939687552,
+  "cache_location": "$HF_HOME/hub/models--allenai--OLMo-2-0425-1B/snapshots/a1847dff35000b4271fa70afc5db10fd29fedbdf"
+}

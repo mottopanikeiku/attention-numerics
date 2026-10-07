@@ -50,3 +50,57 @@ This project's key-centering-only FP8 surrogate borrows SageAttention's softmax-
 A small inspectable rounding model and controlled ablations separate input quantization, probability quantization, accumulation, online rescaling, and output rounding. The study compares the same synthetic arrays to a two-pass chunked float64 reference and reports error as context grows. It adds no claim of a new algorithm, GPU speed, model quality, or H800 prediction.
 
 The locally available accuracy baselines are the NumPy FP32 condition and PyTorch CPU scaled-dot-product attention at BF16/FP32 on the same captured operands ([results](../results/real.csv)). CPU SDPA/BF16 is effectively tied in median error and wins on the first layer's first tested head. FlashAttention GPU implementations cannot run on this GPU-free machine; comparisons to their published numerical tables would mix hardware, inputs and rounding models, so they are not made.
+
+## Cross-family study: known ideas and the narrower question
+
+The preceding surrogate description and results concern the original study. The cross-family extension asks about attention-only FP8 rounding on actual post-RoPE operands; it does not turn those earlier results into downstream model-quality evidence. The table below distinguishes established methods from a potentially useful empirical comparison. It reports no results of the extension.
+
+| Topic | Already established in primary sources | Scope for this study |
+| --- | --- | --- |
+| Mean-key cancellation | [SageAttention v9, §4.2, Eq. (6)](https://arxiv.org/html/2410.02367v9#S4.SS2) subtracts the token-axis key mean and explicitly derives softmax invariance. | Measure how much common key bias is present and what centering changes under specified FP8 rounding; not a new identity or smoothing algorithm. |
+| Corrected query smoothing | [SageAttention2 v7, §3.1, Eq. (2)](https://arxiv.org/html/2411.10958v7#S3.SS1) gives query-block centering and its key-dependent correction. Appendix A.5 also analyzes smoothing under Gaussian assumptions. | Apply the existing correction in an FP8 surrogate, separately from the paper's integer kernel. |
+| Rotation and outliers | [FlashAttention-3 v1, §3.3](https://arxiv.org/html/2407.08608v1#S3.SS3), [QuaRot v2, §3–4](https://arxiv.org/html/2404.00456v2#S3) and [SpinQuant v4, §2–3](https://arxiv.org/html/2405.16406v4#S2) already study incoherent processing, outlier reduction and rotation-dependent quantization error. | Characterize when a fixed shared Q/K transform helps or hurts these FP8 operands; not invent rotation or assert universal improvement. |
+| Integer versus FP8 | [SageAttention v9, §4.3, Tables 2–3](https://arxiv.org/html/2410.02367v9#S4.SS3) compares integer and floating-point operand formats. [FP8 Formats v2, §3, Table 1](https://arxiv.org/html/2209.05433v2#S3) specifies FP8 encodings. | Keep the distinction between an integer uniform grid and FP8 exponent-dependent spacing; a smaller absolute maximum alone is not an FP8 error guarantee. |
+| Layer/head coverage and downstream comparison | [KIVI v2, §3.2, Table 2](https://arxiv.org/html/2402.02750v2#S3.SS2) averages errors over all layers and heads. [SageAttention2 v7, §4.1–4.3, Tables 4–5](https://arxiv.org/html/2411.10958v7#S4.SS1) compares rotation and smoothing and evaluates downstream metrics. | Neither all-head coverage, multiple models, nor a rotation/smoothing comparison alone is new. |
+| Potential contribution | The reviewed sources establish these ingredients, but do not establish this particular matched post-RoPE FP8 study. | A cross-family, per-head characterization linked to a prediction tested on held-out families/texts, plus a matched attention-only comparison using held-out next-token CE, exp(CE) and output-distribution KL. This is a research question, not a demonstrated contribution or a claim of priority. |
+
+### Exact transform and correction conventions
+
+[FlashAttention-3 v1, §3.3](https://arxiv.org/html/2407.08608v1#S3.SS3) uses **row-matrix right multiplication**:
+
+$$
+Q'=QM,\qquad K'=KM,\qquad MM^\top=I,\qquad Q'K'^\top=QK^\top.
+$$
+
+Its incoherent-processing step rotates **Q and K only**, not V. V has block quantization, which is a different operation. The paper describes M as a product of random sign-diagonal matrices and a Hadamard matrix, but does not specify their factor order/count or a random-number generator/seed. A concrete row-vector realization is `x D H`, with sign diagonal D and normalized Walsh–Hadamard H: signs precede mixing. This is an implementation choice consistent with the stated mathematics, not a source-prescribed factorization. In contrast, `x H D` only flips the mixed coordinates' signs. For symmetric magnitude-based quantization, those final sign flips do not provide the randomized cancellation of input contributions. If V were rotated as well, the output basis would change and would require an inverse transform; that is not this FA3 step.
+
+For [SageAttention2 v7, §3.1](https://arxiv.org/html/2411.10958v7#S3.SS1), write `Q_i^c = Q_i - mu_Qi` and `K_j^c = K_j - mu_K`. The means are channel vectors: Q's mean is over each query block's tokens, K's over all key tokens, independently for each batch/head. The corrected logits are
+
+$$
+\widetilde S_{ij}
+=\alpha\left[
+\operatorname{dequant}(\widehat Q_i^c(\widehat K_j^c)^\top)
++\mathbf1\,\mu_{Qi}(K_j^c)^\top
+\right].
+$$
+
+The correction uses centered K **before quantization**, varies over keys, and is broadcast over query rows before softmax. The discarded term is the row-constant `alpha Q_i mu_K^T`. The paper suppresses alpha in its §3.1 decomposition; its §2.1 attention definition supplies the scaling. Without the correction, Q centering changes attention even in exact arithmetic.
+
+The earlier datatype distinctions remain essential: [SageAttention2 v7, §3.2–3.4 and Appendix A.6](https://arxiv.org/html/2411.10958v7#S3.SS2) uses per-thread INT4 Q/K with INT32 MMA accumulation, E4M3 unnormalized online-softmax probabilities with scale `1/448`, per-channel E4M3 V, and a separate FP32 block-accumulation buffer around the reported effective FP22 hardware accumulator. FP8 Q/K plus FP32 recurrence borrows preprocessing, not this kernel's quantization or accumulation behavior.
+
+In this study's [attention emulator](../study/attention.py), the rotation is shared Q/K `D H`, leaves V unrotated, and uses NumPy PCG64 with default `sign_seed=1729`; these are declared emulator choices, not paper-specified constants. The rounded conditions use blockwise E4M3 Q/K/V and FP32 recurrence. `smooth_kq` restores the mean-query correction using prequantized centered K. These conditions do not reproduce SageAttention2's INT4 Q/K, per-channel V or effective FP22 hardware accumulation.
+
+### Sinks, massive activations and no-op heads are related, not equivalent
+
+- **Xiao, Tian, Chen, Han and Lewis, [Efficient Streaming Language Models with Attention Sinks, arXiv:2309.17453v3](https://arxiv.org/html/2309.17453v3#S3.SS1), 2023, §3.1–3.3.** The authors observe semantically unimportant initial tokens attracting attention and show that retaining their KV states stabilizes windowed inference. This concerns attention allocation and cache eviction. Subtracting a common key vector preserves that allocation in exact arithmetic; it does not remove sink tokens.
+- **Mingjie Sun, Xinlei Chen, Kolter and Zhuang Liu, [Massive Activations in Large Language Models, arXiv:2402.17762v2](https://arxiv.org/html/2402.17762v2#S2), 2024, §2–4.** The measured objects are rare scalar outliers in post-residual hidden states, not a mean vector shared by all key tokens. Their interventions support a bias-like role and a connection to attention concentration. The paper explicitly distinguishes massive activations from widespread outlier features (§2.3); neither is automatically Sage's common key bias.
+- **Bondarenko, Nagel and Blankevoort, [Quantizable Transformers: Removing Outliers by Helping Attention Heads Do Nothing, arXiv:2306.12929v2](https://arxiv.org/html/2306.12929v2#S3), 2023, §3–4.** Their no-op hypothesis connects concentrated attention on low-value tokens to small residual updates and pressure toward large logit differences. Clipped softmax (§4.1, Eq. (4)) and learned gated attention (§4.2, Eq. (5)) alter the trained architecture; mean-key cancellation does not. Large keys alone do not identify a no-op head: values and the resulting update matter.
+- **Shangwen Sun, Canziani, LeCun and Zhu, [The Spike, the Sparse and the Sink, arXiv:2603.05498v1](https://arxiv.org/html/2603.05498v1#S4.SS2.SSS2), 2026 preprint, §3 and §4.2.2.** The authors analyze Llama/Qwen and use normalization ablations to suppress spikes while retaining sinks. This newer evidence further cautions against treating co-occurrence as equivalence or proposing one universal cause from operand statistics alone.
+
+### KV-cache quantization addresses a different numerical workload
+
+- **Mengzhao Chen et al., [PrefixQuant: Eliminating Outliers by Prefixed Tokens for Large Language Models Quantization, arXiv:2410.05265v2](https://arxiv.org/html/2410.05265v2#S4), 2025 revision, §4.1–4.3.** The revised title differs from v1's *Static Quantization Beats Dynamic through Prefixed Outliers in LLMs*. PrefixQuant isolates token-wise outliers using cached prefix tokens, builds on Hadamard rotations, and adds block-wise fine-tuning. Its prefix intervention changes context; it is not algebraic key centering. Its Q/K analysis also includes unusually small-magnitude tokens, so not every relevant outlier is a large coordinate.
+- **Hooper et al., [KVQuant: Towards 10 Million Context Length LLM Inference with KV Cache Quantization, arXiv:2401.18079v6](https://arxiv.org/html/2401.18079v6#S3), 2025 revision of the 2024 work, §3.1–3.6.** It combines per-channel pre-RoPE keys, per-token values, calibrated non-uniform codebooks and separate high-precision outliers. Its sink-aware step (§3.5) retains the first token in FP16. Pre-RoPE storage with RoPE after dequantization is not post-RoPE FP8 attention arithmetic.
+- **Zirui Liu et al., [KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache, arXiv:2402.02750v2](https://arxiv.org/html/2402.02750v2#S3), 2024, §3.1–3.3.** It uses affine integer quantization with per-channel keys, per-token values, and a full-precision recent residual cache. Its analysis distinguishes operand reconstruction error from attention-output error; its prefill passes exact KV tensors onward while storing the quantized cache. That is not quantizing both Q/K and online-softmax operands throughout prefill.
+
+These papers motivate checking token structure, channel structure, RoPE location, quantization groups and downstream sensitivity separately. They do not justify inferring cache-memory savings, kernel speed, sink removal or a common causal mechanism from this study's FP8 emulation.

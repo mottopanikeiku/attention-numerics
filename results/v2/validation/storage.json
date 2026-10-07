@@ -1,0 +1,25 @@
+{
+  "torch": "2.10.0+cpu",
+  "numpy": "2.5.3",
+  "ml_dtypes": "0.5.4",
+  "device": "cpu",
+  "format": "float8_e4m3fn",
+  "input_domain": "All 65536 BF16 storage patterns, including signed NaNs and infinities.",
+  "cases": {
+    "raw": {
+      "patterns": 65536,
+      "mismatches": 0,
+      "first_mismatches": [],
+      "nan_outputs": 30766,
+      "negative_zero_outputs": 14977
+    },
+    "saturating": {
+      "patterns": 65536,
+      "mismatches": 0,
+      "first_mismatches": [],
+      "nan_outputs": 254,
+      "negative_zero_outputs": 14977
+    }
+  },
+  "limitation": "CPU conversion only; does not validate a GPU GEMM or accumulator."
+}

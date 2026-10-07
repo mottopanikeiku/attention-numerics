@@ -35,3 +35,56 @@ The numerical review identified one P2 precision-boundary defect: an original fl
 The claims review checked every captured table entry, mean-energy fraction, reference norm, worst-row TV/key change and synthetic median/range against the raw records. It independently confirmed the pinned SageAttention §4.2 Eq. (6) and SageAttention2 §3.1–3.4 citations. It judged the explanation appropriately qualified: evidence for a shared-component contributor, not projection bias as the sole cause.
 
 Two P3 presentation/provenance findings were corrected: the diagnostic figure's footer was moved clear of its tick labels, and the README's experiment-version link now points to recorded numerical-run metadata rather than the regenerable rendering environment. [REPRODUCE.md](REPRODUCE.md) explicitly distinguishes the two. The reviewed README meets the total/opening/mechanism limits, and the exact-constant, additive-bias and varying-outlier controls remain separate.
+
+## All-layer study: theory and inference
+
+Two independent read-only reviews on `openai-codex/gpt-6.1-sol:high` covered the
+locked prediction/statistical design and the streamed inference/FP8/metric code.
+Neither ran numerical work or loaded an untouched evaluation model.
+
+The theory review found no actionable defect. It checked the retained Q/K
+cross-noise term, removal of row-common score noise, the softmax/output Jacobian,
+relative-MSE units, exclusion of measured surrogate outputs from features, one
+Qwen-only affine calibration, and explicit exclusion of both development pilots
+from untouched-model evaluation. It also checked the zero-threshold classifier,
+ties, majority and balanced accuracy, tied-rank AUC, minority precision/recall,
+denominators, and the operational three-text prefix-sink definition. Scalar
+covariance contraction, causal sensitivity with full-pair noise statistics,
+linearization, and omitted P/V/output/transform rounding remain disclosed
+approximations, not guarantees of accurate prediction.
+
+The inference review found three interrupted-run or cross-cache provenance
+defects, not observed arithmetic corruption. Capture file records now live in a
+cache-local manifest written before advancing the hidden-state checkpoint;
+resumption republishes that manifest even when all layers are already complete.
+Score metadata is now atomically published before the metrics file that marks
+scoring complete. Real tiny-model regressions cover switching between completed
+and partial caches and interrupted private/public/score metadata publication.
+The three existing completed capture caches were migrated from their actual
+matching published manifests; no numerical operands or results were changed.
+A focused read-only recheck found these fixes addressed all three findings.
+
+No additional actionable arithmetic defect was found in the native architecture
+dispatch, selective checkpoint loading, E4M3 recurrence, or full-vocabulary CE/KL
+paths. That is source review, not independent validation of every real model.
+The actual runtime, checks, and scoped native/fast/storage validation records are
+under [`results/v2/`](../results/v2/). The prediction code and thresholds remain
+those published in [f756745](https://github.com/mottopanikeiku/attention-numerics/commit/f756745)
+before untouched evaluation inputs were loaded.
+
+### Final numerical-claims audit
+
+After all six models finished, a cold reader independently recomputed the
+README's quantities from CSV/JSON. It confirmed 8,640 unique matched head/text
+rows, all 2,880 physical heads, every pinned layer/head/text identity, and the
+designated 1,728-head untouched split. The audit checked all headline risk
+statistics, physical-head rotation-gain R² versus pooled transformation-gain
+R², Qwen-only calibration, every downstream ΔCE/KL cell, token-weighted expCE
+ratios, validation counts, and the undefined AUC/recall for OLMo's zero positives.
+This was independent data arithmetic, not a rerun of the model experiments.
+
+One publication defect was corrected: the compressed README had described
+actual harm using predicted errors. It now states that **observed** rotated
+log-error exceeding tile log-error defines the label, while the classifier uses
+predicted counterparts. The distinction matters: the untouched group contains
+132 observed-positive heads and 143 predicted-positive heads.

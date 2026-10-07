@@ -1,0 +1,1119 @@
+{
+  "model": "olmo1",
+  "model_id": "allenai/OLMo-2-0425-1B",
+  "revision": "a1847dff35000b4271fa70afc5db10fd29fedbdf",
+  "family": "olmo",
+  "tokens": 1024,
+  "next_layer": 16,
+  "total_layers": 16,
+  "complete": true,
+  "files": [
+    {
+      "layer": 0,
+      "text": "alice",
+      "file": "olmo1/capture/layer_00_alice.npz",
+      "sha256": "13f4dbe585a45dce06d8c9d4d4eaecfba1c7a439deed2dab6854a885b3084c2b",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 0,
+      "text": "moby",
+      "file": "olmo1/capture/layer_00_moby.npz",
+      "sha256": "1d773cc5a4d2c86f40c3a8b0686cbdf98c21f31324f37127003bb5dc635d9177",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 0,
+      "text": "pride",
+      "file": "olmo1/capture/layer_00_pride.npz",
+      "sha256": "f98649e3eb4105158493e7e778cf04c1bb19aa9cf75b56b982e921e44ce23893",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 1,
+      "text": "alice",
+      "file": "olmo1/capture/layer_01_alice.npz",
+      "sha256": "2278714321a19a4a3919a45e1cf5e5bc934093473e801e8395aea7ffdbe6cbc3",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 1,
+      "text": "moby",
+      "file": "olmo1/capture/layer_01_moby.npz",
+      "sha256": "ba85f1e294a05e0c6443e3b922a2cf3cb25fd89363887053c5261be220d85884",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 1,
+      "text": "pride",
+      "file": "olmo1/capture/layer_01_pride.npz",
+      "sha256": "849b0151521f5d0b242caacfc2b9c2b57c89f7d26b9e03b9a59a07923c268885",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 2,
+      "text": "alice",
+      "file": "olmo1/capture/layer_02_alice.npz",
+      "sha256": "af1c2277e61aba1b7502c0108cfcf4c6649703aeae8e846fdc8751c1c860bf8d",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 2,
+      "text": "moby",
+      "file": "olmo1/capture/layer_02_moby.npz",
+      "sha256": "40ba67fa37cb00edad9faa9e8aee5297da90d1a8496eb43b6dc6ee7342243054",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 2,
+      "text": "pride",
+      "file": "olmo1/capture/layer_02_pride.npz",
+      "sha256": "81ca2d1954bbd1b14d984cb7b1cc96fca00a4867823e512faa5da014c26823fd",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 3,
+      "text": "alice",
+      "file": "olmo1/capture/layer_03_alice.npz",
+      "sha256": "ffe315cfba0e3c5e69ae7044bf05259df074c8df023c3e615fc5968e5b09e53d",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 3,
+      "text": "moby",
+      "file": "olmo1/capture/layer_03_moby.npz",
+      "sha256": "df54bd89d59ee09e6f4b46a757daebefbf6358f90aff50721e6e8b93aec0fcce",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 3,
+      "text": "pride",
+      "file": "olmo1/capture/layer_03_pride.npz",
+      "sha256": "f9b049cf352df2db2d47322844749deb53dddeb774afab109d7bf14c9f0423d5",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 4,
+      "text": "alice",
+      "file": "olmo1/capture/layer_04_alice.npz",
+      "sha256": "ddda069d43b6a1062869726e2eda0b15e0192acc6550b47c27d266041961e3f7",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 4,
+      "text": "moby",
+      "file": "olmo1/capture/layer_04_moby.npz",
+      "sha256": "af599748ac409fe700aa693a25e2cd619908fc11f3b004970978aca8daff29c5",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 4,
+      "text": "pride",
+      "file": "olmo1/capture/layer_04_pride.npz",
+      "sha256": "edf9bbf379332b63ce7e8f791e29ca5ced5e27e77acf26dddae518b30fbb1209",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 5,
+      "text": "alice",
+      "file": "olmo1/capture/layer_05_alice.npz",
+      "sha256": "7b26b6778864d9ae77bc272ac3ea86d1886182a59b5a66fedb4825858c2777f9",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 5,
+      "text": "moby",
+      "file": "olmo1/capture/layer_05_moby.npz",
+      "sha256": "912732e53a6330e366de2e498147507ea7c44c3b8963fcbab9741a7b09f9ccfb",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 5,
+      "text": "pride",
+      "file": "olmo1/capture/layer_05_pride.npz",
+      "sha256": "b90e9706b0009895f9cfa683ef7f467a7f5b035089f1a7a77f3db4d3250fc786",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 6,
+      "text": "alice",
+      "file": "olmo1/capture/layer_06_alice.npz",
+      "sha256": "5eefe916682d9055e091fb042996ef38970d99f33b6bbc9c24edceb9a6b59dca",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 6,
+      "text": "moby",
+      "file": "olmo1/capture/layer_06_moby.npz",
+      "sha256": "dbdf5ea51e8480c6efd52d51ea3369eb8fc3cea97aff958b09f178fb5ee8e7c8",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 6,
+      "text": "pride",
+      "file": "olmo1/capture/layer_06_pride.npz",
+      "sha256": "2d0caead73431711aeb93746cfaa28af0dfa018bcb778ad8a7b193be02aa28ef",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 7,
+      "text": "alice",
+      "file": "olmo1/capture/layer_07_alice.npz",
+      "sha256": "c3a05cb3de91045a4bfc9b6f48c2e288bf1c82eb3d72b9494661039c05d81131",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 7,
+      "text": "moby",
+      "file": "olmo1/capture/layer_07_moby.npz",
+      "sha256": "867a587d2f89390d75eb55570440f199524f3e6ae0b08456fac9b7b6806209c2",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 7,
+      "text": "pride",
+      "file": "olmo1/capture/layer_07_pride.npz",
+      "sha256": "b16a1e5a9b714109cc31455b37f4fd2d77d5c99ad382c270ac1bf59ac2fc6e6a",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 8,
+      "text": "alice",
+      "file": "olmo1/capture/layer_08_alice.npz",
+      "sha256": "94b7d4605533bdcfd7556c09a04aca093abfc6b88212c7aef6d21e8e209dd965",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 8,
+      "text": "moby",
+      "file": "olmo1/capture/layer_08_moby.npz",
+      "sha256": "e97ffe767f4ced76106cc170fdd166771f09bb6454871ad31d0590a3a48f043f",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 8,
+      "text": "pride",
+      "file": "olmo1/capture/layer_08_pride.npz",
+      "sha256": "b985ea65c793376ec2fd3ac03a6d3c691388f64f212b4f14b10835d4b93bf70d",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 9,
+      "text": "alice",
+      "file": "olmo1/capture/layer_09_alice.npz",
+      "sha256": "ca03106b565c1d6e504446ea1d1c236c0028e9295a3c2a66f29236734b4b7880",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 9,
+      "text": "moby",
+      "file": "olmo1/capture/layer_09_moby.npz",
+      "sha256": "2b75a5f4a14f1da7cb061d4fb45754a4bd11e653f2ddb1f334dab69057481cb1",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 9,
+      "text": "pride",
+      "file": "olmo1/capture/layer_09_pride.npz",
+      "sha256": "588e3ad916ec4888290f0160715e5145fd484b774be1d8d4d49b57aab3690ccc",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 10,
+      "text": "alice",
+      "file": "olmo1/capture/layer_10_alice.npz",
+      "sha256": "b2e1f8b9335f4bc4c2b703d5424ad37d3da7d7b47d0a6bd65e62bb441bf658d8",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 10,
+      "text": "moby",
+      "file": "olmo1/capture/layer_10_moby.npz",
+      "sha256": "d7f39fbb65febe4dec0909870f0811ea5d8d749118ee39fc743b4252f5eaca1c",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 10,
+      "text": "pride",
+      "file": "olmo1/capture/layer_10_pride.npz",
+      "sha256": "e844202658d449a0e96726ab752678d7e447f8ca17986b0a3c0e1258f2076473",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 11,
+      "text": "alice",
+      "file": "olmo1/capture/layer_11_alice.npz",
+      "sha256": "0f38f68caf4a2d2e9cf4c9f4a88447b89f67be89f9dd1a56131f4e649ac64d70",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 11,
+      "text": "moby",
+      "file": "olmo1/capture/layer_11_moby.npz",
+      "sha256": "5695d91ddbe848b6af5d819175987826c013a0a8354547a787eb1822dd01f06f",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 11,
+      "text": "pride",
+      "file": "olmo1/capture/layer_11_pride.npz",
+      "sha256": "fb08bf51998bdebf076cb766b42adb29ba9569c063110e743c158de4e15e6929",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 12,
+      "text": "alice",
+      "file": "olmo1/capture/layer_12_alice.npz",
+      "sha256": "237e1a63dd1d1234c91bf8d29e805b0bb51c011698498af9226276c94ec41f16",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 12,
+      "text": "moby",
+      "file": "olmo1/capture/layer_12_moby.npz",
+      "sha256": "a1b15b2ad4c2b6df6ce5e4aa4a9356f3dc2e7456f0b517317a74967bc109df03",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 12,
+      "text": "pride",
+      "file": "olmo1/capture/layer_12_pride.npz",
+      "sha256": "558a3f67612844c67ac99c69a2acfbfdb2766e881aabf3768b13664480e3bc26",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 13,
+      "text": "alice",
+      "file": "olmo1/capture/layer_13_alice.npz",
+      "sha256": "8ed909cfedc0340e717a057e6868c7555caada2fea2e4f84ac6a3aa4ba6599e9",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 13,
+      "text": "moby",
+      "file": "olmo1/capture/layer_13_moby.npz",
+      "sha256": "bf9898b942a059e8834d7f884b9737d28b6c4dd8a408399f406a0b683465bb05",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 13,
+      "text": "pride",
+      "file": "olmo1/capture/layer_13_pride.npz",
+      "sha256": "35c50dac3bbc729975d27865cb1c0a844373f9b6b358e563e017185b646cc3b9",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 14,
+      "text": "alice",
+      "file": "olmo1/capture/layer_14_alice.npz",
+      "sha256": "b4dce389568175a9333be64df350ea5ba8590d59b1e8b71c2df7f5a74f3370ba",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 14,
+      "text": "moby",
+      "file": "olmo1/capture/layer_14_moby.npz",
+      "sha256": "85117c6acd7f470cecfecf7f6b12d6dc91c19fb3a7bba87c465cad43fd67de9e",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 14,
+      "text": "pride",
+      "file": "olmo1/capture/layer_14_pride.npz",
+      "sha256": "cb7725a3b2b895588b842142ed9c9f19848247eb0f8921e53d580907be3e5103",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 15,
+      "text": "alice",
+      "file": "olmo1/capture/layer_15_alice.npz",
+      "sha256": "ef84b0d34b8a8d1e53fe5e9658649a4d855f7ec79ffba00dfe6f3857065d1ad1",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 15,
+      "text": "moby",
+      "file": "olmo1/capture/layer_15_moby.npz",
+      "sha256": "f799582ee4f6d533a65e34e079746f6ad8768b4932fa0ea8dcd674246f857dad",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    },
+    {
+      "layer": 15,
+      "text": "pride",
+      "file": "olmo1/capture/layer_15_pride.npz",
+      "sha256": "9a22c50938483261a2b7defc791a814bbf100ab0fe582622689defb503f3db1a",
+      "q_shape": [
+        16,
+        1024,
+        128
+      ],
+      "k_shape": [
+        16,
+        1024,
+        128
+      ],
+      "v_shape": [
+        16,
+        1024,
+        128
+      ],
+      "dtype": "bf16",
+      "scale": 0.08838834764831845
+    }
+  ],
+  "capture_point": "Actual native BF16 post-RoPE Q/K, pre-GQA-duplication K/V.",
+  "attention_baseline": "Unmodified Transformers SDPA BF16 attention.",
+  "storage": "External NPZ captures; manifest filenames are relative to work-dir."
+}
