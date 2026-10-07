@@ -263,7 +263,9 @@ def run(
         completed_path = volume_path / "accuracy-results" / f"{key}.json.gz"
         if not pilot and completed_path.is_file():
             cached = read_gzip(completed_path)
-            expected = {(item["item_id"], variant) for item in items for variant in plan["variants"]}
+            expected = {
+                (item["item_id"], variant) for item in items for variant in plan["variants"]
+            }
             observed = {(row["item_id"], row["variant"]) for row in cached["rows"]}
             if (
                 cached["plan_sha256"] != plan_sha
