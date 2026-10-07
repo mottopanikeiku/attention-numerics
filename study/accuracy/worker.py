@@ -260,6 +260,30 @@ def run(
         key = entry["key"]
         if key not in selected_models:
             continue
+        completed_path = volume_path / "accuracy-results" / f"{key}.json.gz"
+        if not pilot and completed_path.is_file():
+            cached = read_gzip(completed_path)
+            expected = {(item["item_id"], variant) for item in items for variant in plan["variants"]}
+            observed = {(row["item_id"], row["variant"]) for row in cached["rows"]}
+            if (
+                cached["plan_sha256"] != plan_sha
+                or cached["item_manifest_sha256"] != items_sha
+                or cached["revision"] != entry["revision"]
+                or observed != expected
+                or len(cached["rows"]) != len(expected)
+            ):
+                raise ValueError("Completed model does not match the fixed accuracy inputs")
+            files[f"{key}.json.gz"] = base64.b64encode(completed_path.read_bytes()).decode()
+            sizing[key] = {
+                "items_per_variant": len(items),
+                "execution": cached["execution"],
+                "total_elapsed_seconds_for_sizing": cached["total_elapsed_seconds_for_sizing"],
+                "full_input_tokens_per_variant": (
+                    token_manifest["models"][key]["input_tokens_per_variant"]
+                ),
+                "reused_complete_model": True,
+            }
+            continue
         token_path = volume_path / "tokens" / f"{key}.json.gz"
         if digest(token_path) != token_manifest["models"][key]["sha256"]:
             raise ValueError("Tokenized choices changed after CPU preparation")
