@@ -170,7 +170,7 @@ def apply_attention(q, k, v, variant, scale=None, sign_seed=1729, diagnostics=No
     module = _load_kernel()
     operands = prepare(q, k, v, variant, native_smoothing=False, sign_seed=sign_seed)
     packed, descales = [], []
-    for name, operand in zip(("q", "k", "v"), operands):
+    for name, operand in zip(("q", "k", "v"), operands, strict=True):
         stats = {} if diagnostics is not None else None
         codes, descale = _quantize(operand, stats)
         packed.append(codes)
@@ -228,7 +228,9 @@ def describe():
         "requested_version": VERSION,
         "recipe_revision": PINNED_REVISION,
         "recipe_build_variant": PREBUILT_VARIANT,
-        "packages": {name: _package_version(name) for name in ("torch", "kernels", "huggingface-hub")},
+        "packages": {
+            name: _package_version(name) for name in ("torch", "kernels", "huggingface-hub")
+        },
         "loaded": loaded,
         "api": "flash_attn_func",
         "input_dtype": "bfloat16",
@@ -247,14 +249,24 @@ def describe():
         "accumulation": {
             "qk": "E4M3 GMMA with float accumulator registers",
             "softmax": "FP32 online recurrence, exp2 with max offset8",
-            "pv": "E4M3 unnormalized exp*256 and E4M3 V GMMA; float O registers rescaled across native tiles",
+            "pv": (
+                "E4M3 unnormalized exp*256 and E4M3 V GMMA; "
+                "float O registers rescaled across native tiles"
+            ),
             "normalization": "FP32 pre-E4M3-cast probability sum; V descale at finalize",
             "ieee_fp32_tensor_core_rounding_claim": False,
             "internal_probability_diagnostics": "not exposed",
         },
-        "settings": {"causal": True, "num_splits": 1, "pack_gqa": False, "return_attn_probs": False},
+        "settings": {
+            "causal": True,
+            "num_splits": 1,
+            "pack_gqa": False,
+            "return_attn_probs": False,
+        },
         "variants": list(VARIANTS),
-        "smoothing": "external K centering in FP64 before FP32; before optional shared FWHT; V untouched",
+        "smoothing": (
+            "external K centering in FP64 before FP32; before optional shared FWHT; V untouched"
+        ),
         "hardware": "Hopper sm90 only; D multiple16, D<=256",
         "sources": [
             "https://huggingface.co/kernels/kernels-community/flash-attn3",

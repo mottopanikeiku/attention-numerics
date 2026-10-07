@@ -40,18 +40,24 @@ def select_heads(rows, top=32, sample=32, seed=SEED):
     for (model, layer, head), cases in sorted(groups.items()):
         if len(cases) != 3 or {row["text"] for row in cases} != set(TEXTS):
             raise ValueError(f"Expected three texts for {model}/{layer}/{head}")
-        score = math.fsum(
-            math.log1p(float(row["rotate_predicted_error"]))
-            - math.log1p(float(row["tile_predicted_error"]))
-            for row in cases
-        ) / 3
+        score = (
+            math.fsum(
+                math.log1p(float(row["rotate_predicted_error"]))
+                - math.log1p(float(row["tile_predicted_error"]))
+                for row in cases
+            )
+            / 3
+        )
         by_model[model].append({"layer": layer, "head": head, "predicted_hurt_score": score})
     selections = {}
     for model, points in sorted(by_model.items()):
         if model in ("qwen05", "qwen15"):
             selections[model] = [dict(point, selected_by=["all"]) for point in points]
             continue
-        ordered = sorted(points, key=lambda point: (-point["predicted_hurt_score"], point["layer"], point["head"]))
+        ordered = sorted(
+            points,
+            key=lambda point: (-point["predicted_hurt_score"], point["layer"], point["head"]),
+        )
         top_ids = {(point["layer"], point["head"]) for point in ordered[:top]}
         # Model-specific stable seed; adding another model cannot change a sample.
         model_seed = int.from_bytes(hashlib.sha256(f"{seed}:{model}".encode()).digest()[:8], "big")
@@ -60,7 +66,9 @@ def select_heads(rows, top=32, sample=32, seed=SEED):
         selected = []
         for point in points:
             identity = (point["layer"], point["head"])
-            tags = (["top"] if identity in top_ids else []) + (["random"] if identity in random_ids else [])
+            tags = (["top"] if identity in top_ids else []) + (
+                ["random"] if identity in random_ids else []
+            )
             if tags:
                 selected.append(dict(point, selected_by=tags))
         selections[model] = selected
@@ -90,8 +98,14 @@ def build_inputs(capture_cache, output, *, top=32, sample=32, seed=SEED):
         "top_count_per_non_qwen_model": top,
         "uniform_sample_per_non_qwen_model": sample,
         "sample_seed": seed,
-        "sampling": "Independent uniform sample from the entire model; overlaps with top ranks are retained as both labels and evaluated once.",
-        "population_warning": "Qwen coverage is exhaustive. Top-rank enrichment is not a population estimate; report random and top strata separately.",
+        "sampling": (
+            "Independent uniform sample from the entire model; "
+            "overlaps with top ranks are retained as both labels and evaluated once."
+        ),
+        "population_warning": (
+            "Qwen coverage is exhaustive. Top-rank enrichment is not a population estimate; "
+            "report random and top strata separately."
+        ),
         "texts": list(TEXTS),
         "tokens": 1024,
         "variants": list(VARIANTS),
@@ -118,7 +132,9 @@ def build_inputs(capture_cache, output, *, top=32, sample=32, seed=SEED):
         row_by_head = {int(row["head"]): row for row in group}
         kv_heads = sorted({int(row["kv_head"]) for row in group})
         kv_lookup = {head: index for index, head in enumerate(kv_heads)}
-        mapping = np.array([kv_lookup[int(row_by_head[head]["kv_head"])] for head in heads], dtype=np.int64)
+        mapping = np.array(
+            [kv_lookup[int(row_by_head[head]["kv_head"])] for head in heads], dtype=np.int64
+        )
         relative = f"operands/{model}/layer_{layer:02d}_{text}.npz"
         destination = output / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
@@ -172,8 +188,30 @@ def build_inputs(capture_cache, output, *, top=32, sample=32, seed=SEED):
     tracked = ROOT / "data/hardware/selection.json"
     tracked.parent.mkdir(parents=True, exist_ok=True)
     tracked.write_text(json.dumps(plan, indent=2) + "\n")
-    print(json.dumps({"bundle": str(archive), **plan["bundle"], "physical_heads": len(selected_ids)}, indent=2))
+    publish_manifest(output, plan, files)
+    print(
+        json.dumps(
+            {"bundle": str(archive), **plan["bundle"], "physical_heads": len(selected_ids)},
+            indent=2,
+        )
+    )
     return plan
+
+
+def publish_manifest(output, plan, files):
+    """Publish every bundled member's hash, not the large private operand arrays."""
+    output = Path(output)
+    members = [
+        {
+            "file": str(path.relative_to(output)),
+            "bytes": path.stat().st_size,
+            "sha256": sha256(path),
+        }
+        for path in sorted(output.rglob("*"))
+        if path.is_file()
+    ]
+    public = {"bundle": plan["bundle"], "captures": files, "members": members}
+    (ROOT / "data/hardware/operands.json").write_text(json.dumps(public, indent=2) + "\n")
 
 
 def main():

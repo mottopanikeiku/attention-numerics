@@ -9,7 +9,6 @@ import platform
 import subprocess
 import tarfile
 import time
-import urllib.request
 from importlib import metadata
 from pathlib import Path
 from types import FunctionType, MethodType
@@ -34,13 +33,11 @@ def sha256(path):
 
 def load_inputs():
     plan = json.loads((ROOT / "data/hardware/selection.json").read_text())
-    archive = Path("/inputs/bundle.tar")
-    archive.parent.mkdir(parents=True, exist_ok=True)
+    archive = Path("/volume/night2-inputs.tar")
     if not archive.is_file():
-        url = plan["bundle"].get("url")
-        if not url:
-            raise ValueError("Upload ATTENTION_INPUT_BUNDLE or use the published input asset URL")
-        urllib.request.urlretrieve(url, archive)
+        raise ValueError(
+            "Prepare the committed capture pipeline's operands and run Modal upload mode first"
+        )
     if sha256(archive) != plan["bundle"]["sha256"]:
         raise ValueError("Hardware input bundle SHA256 mismatch")
     INPUTS.mkdir(parents=True, exist_ok=True)
@@ -55,24 +52,42 @@ def load_inputs():
 def runtime():
     properties = torch.cuda.get_device_properties(0)
     versions = {}
-    for name in ("torch", "numpy", "transformers", "huggingface-hub", "sageattention", "safetensors"):
+    for name in (
+        "torch",
+        "numpy",
+        "transformers",
+        "huggingface-hub",
+        "sageattention",
+        "safetensors",
+    ):
         try:
             versions[name] = metadata.version(name)
         except metadata.PackageNotFoundError:
             versions[name] = None
     driver = subprocess.run(
         ["nvidia-smi", "--query-gpu=name,driver_version", "--format=csv,noheader"],
-        text=True, capture_output=True, check=True,
+        text=True,
+        capture_output=True,
+        check=True,
     ).stdout.strip()
     return {
-        "python": platform.python_version(), "os": platform.platform(),
-        "packages": versions, "torch_version": torch.__version__,
-        "cuda_runtime": torch.version.cuda, "cudnn": torch.backends.cudnn.version(),
-        "gpu": properties.name, "compute_capability": [properties.major, properties.minor],
-        "gpu_memory_bytes": properties.total_memory, "driver_query": driver,
-        "cpu_threads": torch.get_num_threads(), "tf32": False,
+        "python": platform.python_version(),
+        "os": platform.platform(),
+        "packages": versions,
+        "torch_version": str(torch.__version__),
+        "cuda_runtime": torch.version.cuda,
+        "cudnn": torch.backends.cudnn.version(),
+        "gpu": properties.name,
+        "compute_capability": [properties.major, properties.minor],
+        "gpu_memory_bytes": properties.total_memory,
+        "driver_query": driver,
+        "cpu_threads": torch.get_num_threads(),
+        "tf32": False,
         "bf16_reduced_precision_reduction": False,
-        "timing_note": "Elapsed times size the paid run and bound cost; they are not latency or speed benchmarks.",
+        "timing_note": (
+            "Elapsed times size the paid run and bound cost; "
+            "they are not latency or speed benchmarks."
+        ),
     }
 
 
@@ -85,22 +100,33 @@ def operands(item):
         for name in ("q", "k", "v"):
             if data[name].dtype != np.uint16:
                 raise ValueError("Expected uint16 BF16 operand bits")
-            arrays[name] = torch.from_numpy(data[name].copy()).view(torch.bfloat16).unsqueeze(0).cuda()
+            arrays[name] = (
+                torch.from_numpy(data[name].copy()).view(torch.bfloat16).unsqueeze(0).cuda()
+            )
         mapping = torch.from_numpy(data["kv_mapping"].copy()).cuda()
         scale = float(data["scale"])
     # A selected subset need not consist of equal-size GQA groups. Explicitly
     # restore each selected query's original KV index, not a new inferred group.
-    return arrays["q"], arrays["k"].index_select(1, mapping), arrays["v"].index_select(1, mapping), scale
+    return (
+        arrays["q"],
+        arrays["k"].index_select(1, mapping),
+        arrays["v"].index_select(1, mapping),
+        scale,
+    )
 
 
 def kernel_trace(adapter, q, k, v, scale):
     # The trace provides observed CUDA names, not just the Python API label.
     adapter.apply_attention(q, k, v, "tile", scale=scale)
     torch.cuda.synchronize()
-    with torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CPU, torch.profiler.ProfilerActivity.CUDA]) as profile:
+    with torch.profiler.profile(
+        activities=[torch.profiler.ProfilerActivity.CPU, torch.profiler.ProfilerActivity.CUDA]
+    ) as profile:
         adapter.apply_attention(q, k, v, "tile", scale=scale)
         torch.cuda.synchronize()
-    names = sorted({event.name for event in profile.events() if str(event.device_type).endswith("CUDA")})
+    names = sorted(
+        {event.name for event in profile.events() if str(event.device_type).endswith("CUDA")}
+    )
     if not names:
         raise RuntimeError("Profiler did not observe any actual CUDA kernel events")
     return names
@@ -113,7 +139,8 @@ def measure_heads(adapter, plan, manifest, *, pilot=False, deadline=None):
     }
     tags = {
         (model, point["layer"], point["head"]): point["selected_by"]
-        for model, points in plan["models"].items() for point in points
+        for model, points in plan["models"].items()
+        for point in points
     }
     files = manifest["files"]
     if pilot:
@@ -145,30 +172,52 @@ def measure_heads(adapter, plan, manifest, *, pilot=False, deadline=None):
             old_energy = float(old["reference_output_mean_square"])
             energy_disagreement = abs(reference_energy[position] - old_energy) / old_energy
             if energy_disagreement > 1e-9:
-                raise ValueError(f"FP64 reference disagrees with v2 energy: {identity}: {energy_disagreement}")
-            rows.append({
-                **{name: old[name] for name in ("model", "family", "revision", "text")},
-                "layer": item["layer"], "head": head, "kv_head": int(old["kv_head"]),
-                "n": int(old["n"]), "d": int(old["d"]), "scale": scale,
-                "selected_by": tags[identity[:3]], "source_capture_sha256": item["source_sha256"],
-                "packed_operand_sha256": item["sha256"],
-                "reference_energy_relative_disagreement": energy_disagreement,
-                "emulator": {
-                    variant: {"relative_fro": float(old[f"{variant}_relative_fro"]),
-                              "predicted_error": float(old[f"{variant}_predicted_error"])}
-                    for variant in VARIANTS
-                },
-                "hardware": {
-                    variant: {"relative_fro": values["relative_fro"][0][position],
-                              "max_abs": values["max_abs"][0][position], "output_nonfinite": 0}
-                    for variant, values in results.items()
-                },
-            })
+                raise ValueError(
+                    f"FP64 reference disagrees with v2 energy: {identity}: {energy_disagreement}"
+                )
+            rows.append(
+                {
+                    **{name: old[name] for name in ("model", "family", "revision", "text")},
+                    "layer": item["layer"],
+                    "head": head,
+                    "kv_head": int(old["kv_head"]),
+                    "n": int(old["n"]),
+                    "d": int(old["d"]),
+                    "scale": scale,
+                    "selected_by": tags[identity[:3]],
+                    "source_capture_sha256": item["source_sha256"],
+                    "packed_operand_sha256": item["sha256"],
+                    "reference_energy_relative_disagreement": energy_disagreement,
+                    "emulator": {
+                        variant: {
+                            "relative_fro": float(old[f"{variant}_relative_fro"]),
+                            "predicted_error": float(old[f"{variant}_predicted_error"]),
+                        }
+                        for variant in VARIANTS
+                    },
+                    "hardware": {
+                        variant: {
+                            "relative_fro": values["relative_fro"][0][position],
+                            "max_abs": values["max_abs"][0][position],
+                            "output_nonfinite": 0,
+                        }
+                        for variant, values in results.items()
+                    },
+                }
+            )
         del q, k, v, reference, native, results
         if (index + 1) % 30 == 0:
-            print(f"Measured {index + 1}/{len(files)} operand files, {len(rows)} head/text cases", flush=True)
-    return {"rows": rows, "quantization_diagnostics": diagnostics, "cuda_kernel_trace": trace,
-            "operand_files": len(files), "elapsed_seconds_for_sizing": time.monotonic() - started}
+            print(
+                f"Measured {index + 1}/{len(files)} operand files, {len(rows)} head/text cases",
+                flush=True,
+            )
+    return {
+        "rows": rows,
+        "quantization_diagnostics": diagnostics,
+        "cuda_kernel_trace": trace,
+        "operand_files": len(files),
+        "elapsed_seconds_for_sizing": time.monotonic() - started,
+    }
 
 
 def install_attention(model, adapter, variant, calls):
@@ -186,7 +235,13 @@ def install_attention(model, adapter, variant, calls):
             return output.transpose(1, 2).contiguous().to(query.dtype), None
 
         globals_copy = dict(forward.__globals__, ALL_ATTENTION_FUNCTIONS={"sdpa": intercepted})
-        rebound = FunctionType(forward.__code__, globals_copy, forward.__name__, forward.__defaults__, forward.__closure__)
+        rebound = FunctionType(
+            forward.__code__,
+            globals_copy,
+            forward.__name__,
+            forward.__defaults__,
+            forward.__closure__,
+        )
         rebound.__kwdefaults__ = forward.__kwdefaults__
         attention.forward = MethodType(rebound, attention)
         original.append((index, attention))
@@ -223,7 +278,9 @@ def measure_downstream(adapter, *, pilot=False, deadline=None):
     from huggingface_hub import snapshot_download
     from transformers import AutoModelForCausalLM
 
-    pins = {item["key"]: item for item in json.loads((INPUTS / "models.json").read_text())["models"]}
+    pins = {
+        item["key"]: item for item in json.loads((INPUTS / "models.json").read_text())["models"]
+    }
     models = ("qwen05",) if pilot else ("qwen05", "qwen15")
     texts = ("alice",) if pilot else ("alice", "moby", "pride")
     variants = ("tile", "rotate") if pilot else VARIANTS
@@ -231,7 +288,12 @@ def measure_downstream(adapter, *, pilot=False, deadline=None):
     started = time.monotonic()
     for key in models:
         pin = pins[key]
-        snapshot = snapshot_download(pin["model_id"], revision=pin["revision"], allow_patterns=["*.json", "*.safetensors"], max_workers=2)
+        snapshot = snapshot_download(
+            pin["model_id"],
+            revision=pin["revision"],
+            allow_patterns=["*.json", "*.safetensors"],
+            max_workers=2,
+        )
         # Check the actual pinned weight bytes rather than trusting the cache key.
         checked_weights = []
         for item in pin["files"]:
@@ -240,9 +302,20 @@ def measure_downstream(adapter, *, pilot=False, deadline=None):
                 observed = sha256(path)
                 if path.stat().st_size != item["bytes"] or observed != item["sha256"]:
                     raise ValueError(f"Pinned model weight mismatch: {key}/{item['path']}")
-                checked_weights.append({"file": item["path"], "bytes": item["bytes"], "sha256": observed})
-        model = AutoModelForCausalLM.from_pretrained(snapshot, local_files_only=True, torch_dtype=torch.bfloat16,
-                                                   attn_implementation="sdpa", low_cpu_mem_usage=True).eval().cuda()
+                checked_weights.append(
+                    {"file": item["path"], "bytes": item["bytes"], "sha256": observed}
+                )
+        model = (
+            AutoModelForCausalLM.from_pretrained(
+                snapshot,
+                local_files_only=True,
+                dtype=torch.bfloat16,
+                attn_implementation="sdpa",
+                low_cpu_mem_usage=True,
+            )
+            .eval()
+            .cuda()
+        )
         expected_layers = set(range(len(model.model.layers)))
         for text in texts:
             with np.load(INPUTS / f"tokens/{key}/{text}.npz", allow_pickle=False) as data:
@@ -253,14 +326,22 @@ def measure_downstream(adapter, *, pilot=False, deadline=None):
             baseline = model(input_ids=inputs, use_cache=False).logits
             if baseline.dtype != torch.bfloat16 or not torch.isfinite(baseline).all():
                 raise ValueError("Invalid native BF16 baseline logits")
-            common = {"model": key, "text": text, "model_id": pin["model_id"], "revision": pin["revision"],
-                      "window": [1024, 2049], "attention_layers": len(model.model.layers),
-                      "weight_files": checked_weights}
+            common = {
+                "model": key,
+                "text": text,
+                "model_id": pin["model_id"],
+                "revision": pin["revision"],
+                "window": [1024, 2049],
+                "attention_layers": len(model.model.layers),
+                "weight_files": checked_weights,
+            }
             base_metrics = distribution_metrics(baseline, baseline, labels)
             rows.append({**common, "variant": "bf16", **base_metrics, "kernel_calls": 0})
             for variant in variants:
                 if deadline is not None and time.monotonic() > deadline:
-                    raise TimeoutError("Insufficient booked time for complete downstream evaluation")
+                    raise TimeoutError(
+                        "Insufficient booked time for complete downstream evaluation"
+                    )
                 calls = []
                 original = install_attention(model, adapter, variant, calls)
                 try:
@@ -268,17 +349,32 @@ def measure_downstream(adapter, *, pilot=False, deadline=None):
                 finally:
                     remove_attention(original)
                 if set(calls) != expected_layers or len(calls) != len(expected_layers):
-                    raise ValueError("Real FP8 kernel did not run exactly once in every decoder layer")
+                    raise ValueError(
+                        "Real FP8 kernel did not run exactly once in every decoder layer"
+                    )
                 metrics = distribution_metrics(logits, baseline, labels)
-                rows.append({**common, "variant": variant, **metrics, "kernel_calls": len(calls),
-                             "delta_ce": metrics["next_token_ce"] - base_metrics["next_token_ce"]})
+                rows.append(
+                    {
+                        **common,
+                        "variant": variant,
+                        **metrics,
+                        "kernel_calls": len(calls),
+                        "delta_ce": metrics["next_token_ce"] - base_metrics["next_token_ce"],
+                    }
+                )
                 del logits
             del baseline, inputs, labels, heldout
         del model
         gc.collect()
         torch.cuda.empty_cache()
-    return {"rows": rows, "elapsed_seconds_for_sizing": time.monotonic() - started,
-            "semantics": "Batch teacher forcing with reset positions; no streaming/generation claim. Full-sequence quantization scales and K means may see later batch tokens."}
+    return {
+        "rows": rows,
+        "elapsed_seconds_for_sizing": time.monotonic() - started,
+        "semantics": (
+            "Batch teacher forcing with reset positions; no streaming/generation claim. "
+            "Full-sequence quantization scales and K means may see later batch tokens."
+        ),
+    }
 
 
 def run(backend, *, mode="pilot", downstream=True, limit_seconds=300):
@@ -298,10 +394,21 @@ def run(backend, *, mode="pilot", downstream=True, limit_seconds=300):
     if backend == "fa3" and downstream:
         downstream_results = measure_downstream(adapter, pilot=mode == "pilot", deadline=deadline)
     return {
-        "schema_version": 1, "backend": backend, "mode": mode, "complete": True,
-        "runtime": runtime(), "adapter": adapter.describe(), "selection": plan,
-        "reference": "FP64 original QK, explicit causal softmax, FP64 PV; BF16 inputs expanded exactly",
-        "heads": head_results, "downstream": downstream_results,
+        "schema_version": 1,
+        "backend": backend,
+        "mode": mode,
+        "complete": True,
+        "runtime": runtime(),
+        "adapter": adapter.describe(),
+        "selection": plan,
+        "reference": (
+            "FP64 original QK, explicit causal softmax, FP64 PV; BF16 inputs expanded exactly"
+        ),
+        "heads": head_results,
+        "downstream": downstream_results,
         "elapsed_seconds_for_sizing": time.monotonic() - started,
-        "cost_note": "Wall-time budget upper bound is recorded separately; this is not a performance benchmark.",
+        "cost_note": (
+            "Wall-time budget upper bound is recorded separately; "
+            "this is not a performance benchmark."
+        ),
     }

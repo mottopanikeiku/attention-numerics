@@ -10,7 +10,6 @@ from types import SimpleNamespace
 
 import pytest
 
-
 torch = pytest.importorskip("torch")
 sage = importlib.import_module("study.hardware.sage")
 
@@ -46,9 +45,7 @@ def test_explicit_api_settings_shared_preparation_and_gqa(monkeypatch, fake_api,
 
     def spy(q, k, v, variant, *, native_smoothing, sign_seed):
         prepare_calls.append((variant, native_smoothing, sign_seed))
-        return prepare(
-            q, k, v, variant, native_smoothing=native_smoothing, sign_seed=sign_seed
-        )
+        return prepare(q, k, v, variant, native_smoothing=native_smoothing, sign_seed=sign_seed)
 
     monkeypatch.setattr(sage.common, "prepare", spy)
     diagnostics = {"caller_field": 7}
@@ -98,8 +95,7 @@ def test_native_smoothing_is_not_applied_externally(fake_api, variant):
 def test_api_narrows_fp32_transforms_to_bf16(monkeypatch, fake_api):
     q, k, v = _inputs()
     prepared = tuple(
-        torch.full(q.shape, value, dtype=torch.float32).transpose(1, 2).contiguous()
-        .transpose(1, 2)
+        torch.full(q.shape, value, dtype=torch.float32).transpose(1, 2).contiguous().transpose(1, 2)
         for value in (1.003, 2.006, 3.009)
     )
     monkeypatch.setattr(sage.common, "prepare", lambda *args, **kwargs: prepared)
@@ -246,8 +242,17 @@ def test_description_is_json_safe_without_importing_sage(monkeypatch):
 
 def test_loads_only_explicit_fp8_cuda_api(monkeypatch):
     def kernel(
-        q, k, v, tensor_layout, is_causal, qk_quant_gran, sm_scale, pv_accum_dtype,
-        smooth_k, smooth_v, return_lse,
+        q,
+        k,
+        v,
+        tensor_layout,
+        is_causal,
+        qk_quant_gran,
+        sm_scale,
+        pv_accum_dtype,
+        smooth_k,
+        smooth_v,
+        return_lse,
     ):
         pytest.fail("this test inspects the API only, never executes a kernel")
 

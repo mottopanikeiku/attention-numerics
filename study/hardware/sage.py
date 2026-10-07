@@ -110,8 +110,14 @@ def _load_kernel():
         raise RuntimeError("SageAttention sm89 CUDA extension is unavailable; no fallback")
     kernel = getattr(core, _API, None)
     required = {
-        "tensor_layout", "is_causal", "qk_quant_gran", "sm_scale", "pv_accum_dtype",
-        "smooth_k", "smooth_v", "return_lse",
+        "tensor_layout",
+        "is_causal",
+        "qk_quant_gran",
+        "sm_scale",
+        "pv_accum_dtype",
+        "smooth_k",
+        "smooth_v",
+        "return_lse",
     }
     if not callable(kernel) or not required.issubset(inspect.signature(kernel).parameters):
         raise RuntimeError(f"SageAttention {_API} lacks the required explicit API settings")
@@ -146,12 +152,12 @@ def apply_attention(q, k, v, variant, scale=None, sign_seed=1729, diagnostics=No
         raise ValueError("softmax scale must be finite and positive")
     _check_device(q, k, v)
     kernel = _load_kernel()
-    transformed = common.prepare(
-        q, k, v, variant, native_smoothing=True, sign_seed=sign_seed
-    )
+    transformed = common.prepare(q, k, v, variant, native_smoothing=True, sign_seed=sign_seed)
     q_api, k_api, v_api = (x.to(torch.bfloat16).contiguous() for x in transformed)
     result = kernel(
-        q_api, k_api, v_api,
+        q_api,
+        k_api,
+        v_api,
         tensor_layout="HND",
         is_causal=True,
         qk_quant_gran="per_warp",

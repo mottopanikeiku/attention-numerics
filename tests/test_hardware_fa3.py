@@ -5,6 +5,7 @@ contract fixture, and common.prepare is injected to avoid pretending CPU
 operands are a valid real-kernel execution. No optional kernels import occurs.
 """
 
+import importlib
 import json
 import sys
 from types import SimpleNamespace
@@ -13,7 +14,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from study.hardware import fa3
+fa3 = importlib.import_module("study.hardware.fa3")
 
 
 def _inputs(d=64, n=3):
@@ -56,7 +57,9 @@ def fake_contract(monkeypatch):
 def test_exact_helper_operands_layout_descales_and_native_output(fake_contract, variant, scale):
     inputs = _inputs()
     diagnostics = {}
-    output = fa3.apply_attention(*inputs, variant, scale=scale, sign_seed=91, diagnostics=diagnostics)
+    output = fa3.apply_attention(
+        *inputs, variant, scale=scale, sign_seed=91, diagnostics=diagnostics
+    )
     call = fake_contract["prepare"]
     assert all(call[i] is inputs[i] for i in range(3))
     assert call[3:] == (variant, False, 91)
@@ -66,7 +69,9 @@ def test_exact_helper_operands_layout_descales_and_native_output(fake_contract, 
     assert kwargs["num_splits"] == 1
     assert kwargs["pack_gqa"] is False
     assert kwargs["return_attn_probs"] is False
-    for name, codes, operand in zip(("q", "k", "v"), packed, fake_contract["prepared"]):
+    for name, codes, operand in zip(
+        ("q", "k", "v"), packed, fake_contract["prepared"], strict=True
+    ):
         expected = operand.abs().amax(dim=(-2, -1)) / 448
         expected = torch.where(expected == 0, 1.0, expected)
         descale = kwargs[f"{name}_descale"]
@@ -268,7 +273,9 @@ def test_explicit_prebuilt_import_preserves_relative_imports_and_build_ids(tmp_p
 def test_prebuilt_rejects_abi_mismatch_before_import(tmp_path, monkeypatch):
     root = tmp_path / fa3.PREBUILT_VARIANT
     root.mkdir()
-    (root / "metadata.json").write_text(json.dumps({"name": "flash-attn3", "version": 1, "id": "unused"}))
+    (root / "metadata.json").write_text(
+        json.dumps({"name": "flash-attn3", "version": 1, "id": "unused"})
+    )
     monkeypatch.setattr(torch.version, "cuda", "12.6")
     with pytest.raises(RuntimeError, match="CUDA12.8"):
         fa3._import_prebuilt(root)
