@@ -1,6 +1,6 @@
 """Ephemeral CPU staging and real-H100 multiple-choice accuracy runs.
 
-Set ATTENTION_GPU=none for weights/prepare; H100 for pilot/full.
+Set ATTENTION_GPU=none for weights/prepare/tokens; H100 for pilot/full.
 Resource environment values must match the booked container allocation.
 """
 
@@ -47,6 +47,8 @@ image = (
             "HF_DATASETS_CACHE": "/volume/datasets",
             "ATTENTION_GPU": GPU,
             "ATTENTION_MINUTES": str(MINUTES),
+            "ATTENTION_CORES": str(CORES),
+            "ATTENTION_MEM_GIB": str(MEM_GIB),
         }
     )
     .add_local_dir(ROOT / "study", "/project/study")
@@ -96,9 +98,16 @@ def experiment(mode="weights", models="", token_budget=16384, pilot_items=8):
                 revision=entry["revision"],
                 local_dir=target,
                 allow_patterns=[
-                    "*.safetensors", "*.safetensors.index.json", "config.json",
-                    "generation_config.json", "tokenizer*", "special_tokens_map.json",
-                    "vocab.json", "merges.txt", "LICENSE*", "README.md",
+                    "*.safetensors",
+                    "*.safetensors.index.json",
+                    "config.json",
+                    "generation_config.json",
+                    "tokenizer*",
+                    "special_tokens_map.json",
+                    "vocab.json",
+                    "merges.txt",
+                    "LICENSE*",
+                    "README.md",
                 ],
                 max_workers=4,
             )
@@ -110,17 +119,25 @@ def experiment(mode="weights", models="", token_budget=16384, pilot_items=8):
             if not any(path.suffix == ".safetensors" for path in files):
                 raise ValueError("No native safetensors checkpoint downloaded")
             records[entry["key"]] = {
-                "repo_id": entry["repo_id"], "revision": entry["revision"],
-                "directory": f"checkpoints/{entry['key']}", "license": entry["license"],
-                "head_dimension": dim, "layers": config["num_hidden_layers"],
+                "repo_id": entry["repo_id"],
+                "revision": entry["revision"],
+                "directory": f"checkpoints/{entry['key']}",
+                "license": entry["license"],
+                "head_dimension": dim,
+                "layers": config["num_hidden_layers"],
                 "sliding_window": config.get("sliding_window"),
-                "files": {path.name: {"bytes": path.stat().st_size, "sha256": _digest(path)}
-                          for path in sorted(files)},
+                "files": {
+                    path.name: {"bytes": path.stat().st_size, "sha256": _digest(path)}
+                    for path in sorted(files)
+                },
             }
             volume.commit()
             print(f"Staged and hashed {entry['key']}", flush=True)
-        manifest = {"models": records, "volume": "attention-numerics-day-models",
-                    "elapsed_seconds_for_sizing": time.monotonic() - started}
+        manifest = {
+            "models": records,
+            "volume": "attention-numerics-day-models",
+            "elapsed_seconds_for_sizing": time.monotonic() - started,
+        }
         Path("/volume/models.json").write_text(json.dumps(manifest, indent=2) + "\n")
         volume.commit()
         return json.dumps({"mode": mode, "manifest": manifest}, allow_nan=False)
@@ -132,10 +149,30 @@ def experiment(mode="weights", models="", token_budget=16384, pilot_items=8):
         destination = Path("/volume/evaluation")
         metadata = prepare_items(destination)
         volume.commit()
-        return json.dumps({"mode": mode, "manifest": metadata,
-                           "files": {path.name: base64.b64encode(path.read_bytes()).decode()
-                                     for path in destination.iterdir() if path.is_file()}},
-                          allow_nan=False)
+        return json.dumps(
+            {
+                "mode": mode,
+                "manifest": metadata,
+                "files": {
+                    path.name: base64.b64encode(path.read_bytes()).decode()
+                    for path in destination.iterdir()
+                    if path.is_file()
+                },
+            },
+            allow_nan=False,
+        )
+    if mode == "tokens":
+        if GPU != "none":
+            raise ValueError("Tokenize fixed items in a CPU container")
+        from study.accuracy.worker import prepare_tokens
+
+        metadata = prepare_tokens(
+            Path("/project/data/accuracy/plan.json"),
+            Path("/project/data/accuracy/items.json.gz"),
+            Path("/volume"),
+        )
+        volume.commit()
+        return json.dumps({"mode": mode, "manifest": metadata}, allow_nan=False)
     if mode not in ("pilot", "full") or GPU != "H100":
         raise ValueError("Accuracy modes require real H100; no fallback")
     from study.accuracy.worker import run
@@ -154,8 +191,13 @@ def experiment(mode="weights", models="", token_budget=16384, pilot_items=8):
 
 
 @app.local_entrypoint()
-def main(mode: str = "weights", output: str = "results/accuracy", models: str = "",
-         token_budget: int = 16384, pilot_items: int = 8):
+def main(
+    mode: str = "weights",
+    output: str = "results/accuracy",
+    models: str = "",
+    token_budget: int = 16384,
+    pilot_items: int = 8,
+):
     result = json.loads(experiment.remote(mode, models, token_budget, pilot_items))
     destination = Path(output)
     destination.mkdir(parents=True, exist_ok=True)
