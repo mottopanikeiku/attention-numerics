@@ -69,7 +69,7 @@ dispatch, selective checkpoint loading, E4M3 recurrence, or full-vocabulary CE/K
 paths. That is source review, not independent validation of every real model.
 The actual runtime, checks, and scoped native/fast/storage validation records are
 under [`results/v2/`](../results/v2/). The prediction code and thresholds remain
-those published in [f756745](https://github.com/mottopanikeiku/attention-numerics/commit/f756745)
+those published in [f756745 (prediction-locked)](https://github.com/mottopanikeiku/attention-numerics/tree/prediction-locked)
 before untouched evaluation inputs were loaded.
 
 ### Final numerical-claims audit
@@ -88,3 +88,35 @@ actual harm using predicted errors. It now states that **observed** rotated
 log-error exceeding tile log-error defines the label, while the classifier uses
 predicted counterparts. The distinction matters: the untouched group contains
 132 observed-positive heads and 143 predicted-positive heads.
+
+## Real kernels: source and independent data arithmetic
+
+Two independent read-only cold reviews on 2026-10-07 used
+`openai-codex/gpt-6.1-sol:high`. Neither ran CI, builds, capture preparation or
+GPU jobs. These are source and recorded-data reviews, not independent GPU reruns.
+
+The numerical/API reviewer found no actionable defect. It checked shared
+PCG64/FWHT rotation, GQA mapping, unchanged V, original-operand FP64 causal
+reference, pinned FA3 binary acquisition/digests and actual FP8 dispatch, Sage
+INT8/FP8 settings and native smoothing/narrowing, and per-instance Qwen dispatch
+with exact all-layer call counts and FP64 vocabulary CE/KL. The raw records
+contain native H100 FP8 and L4 INT8/FP8 CUDA traces, 390 operand files per backend,
+and all 30 FA3 downstream rows. Each nonbaseline forward records 24 or 28 native
+kernel calls, matching the model's layers.
+
+The claims reviewer independently aggregated raw records with standard-library
+arithmetic. It confirmed 918 heads × three texts per backend, every 336+336 Qwen
+head, reconstructed top32/uniform32 selections, all 398 operand-manifest members,
+1,836 physical-head CSV rows and 12 per-model classifiers. Summary, CSV and
+locked-score differences were at most 2.23e-16. It reproduced Qwen AUCs
+0.956145/0.965517; FA3 TP79/FP44/FN8 versus Sage TP5/FP118/FN0; unrotated error
+rank correlations 0.992052/0.849987; rotation-effect correlations
+0.982007/0.262593; 28/146 harm disagreements; all token-weighted CE/KL values;
+the 12.560327×/1.004379× Qwen1.5B ratios; and the $0.8699 conservative cost sum.
+
+The comparison is transfer to real kernels, not matched-arithmetic reproduction:
+scales, probability representation, accumulation and Sage BF16 preprocessing
+differ together. Private operand access, enriched non-Qwen sampling,
+future-token-dependent batch preprocessing and FA3-only downstream evaluation
+remain explicit limitations. The README does not equate Sage's high AUC with
+useful zero-threshold precision or claim a latency benchmark.

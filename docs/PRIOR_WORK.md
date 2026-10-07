@@ -104,3 +104,12 @@ In this study's [attention emulator](../study/attention.py), the rotation is sha
 - **Zirui Liu et al., [KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache, arXiv:2402.02750v2](https://arxiv.org/html/2402.02750v2#S3), 2024, §3.1–3.3.** It uses affine integer quantization with per-channel keys, per-token values, and a full-precision recent residual cache. Its analysis distinguishes operand reconstruction error from attention-output error; its prefill passes exact KV tensors onward while storing the quantized cache. That is not quantizing both Q/K and online-softmax operands throughout prefill.
 
 These papers motivate checking token structure, channel structure, RoPE location, quantization groups and downstream sensitivity separately. They do not justify inferring cache-memory savings, kernel speed, sink removal or a common causal mechanism from this study's FP8 emulation.
+
+## Checking the actual public kernels
+
+I use the [publisher's FA3 version-1 stable-ABI CUDA12.8 build](https://huggingface.co/kernels/kernels-community/flash-attn3/tree/7cb368cf8278b583132eb72cbf312d54586df2e2/build/torch-stable-abi29-cu128-x86_64-linux), not a software substitute. Its public FP8 call accepts per-batch/head Q/K/V descales. My wrapper uses full-sequence max scales, which are not the emulator's Q32/K128 block scales. The binary and Python interface are BSD-3-Clause upstream work; this repository's wrapper and comparison code are mine.
+
+For Ada I call the named INT8-QK/FP8-PV API from [official SageAttention2.2.0 source commit eb615cf](https://github.com/thu-ml/SageAttention/tree/eb615cf6cf4d221338033340ee2de1c37fbdba4a), under its Apache-2.0 license. I explicitly choose per-warp Q32/K64 quantization and buffered `fp32+fp32` PV accumulation. This is not the INT4 configuration described above, nor the uniform-E4 emulator. Native Sage key smoothing and BF16 transform narrowing also differ from the emulator's preprocessing.
+
+The new question is whether the unchanged operand-derived predictor transfers across those arithmetic changes, on exactly the same captured operands, and whether the emulated Qwen loss increases appear under real FP8 attention in every layer. I separate those comparisons from kernel-speed or cache-memory claims. [The reproduction appendix](REPRODUCE.md#real-kernel-comparison) records the API/settings distinctions and pinned input hashes.
+
