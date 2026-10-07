@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Explore why rotating queries and keys before FP8 rounding can make attention less accurate.">
+  <title>When rotation hurts attention · Alp Cetin</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.mjs"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header><a href="https://github.com/mottopanikeiku/attention-numerics">attention-numerics / Alp Cetin</a><button id="theme" type="button" aria-label="Switch color theme">Switch theme</button></header>
+<main id="main">
+  <section class="intro" aria-labelledby="title">
+    <p class="eyebrow">A rounding problem, not a rotation problem</p>
+    <h1 id="title">When rotation hurts attention</h1>
+    <p class="lede">Rotation preserves dot products. Rounding does not. I measured what happens when the two meet in low-precision attention.</p>
+    <div class="stats"><div><strong>250 / 2,880</strong><span>heads made less accurate</span></div><div><strong>0.978 AUC</strong><span>prediction on three unseen models</span></div><div><strong>1.91×</strong><span>Qwen2.5-0.5B perplexity with rotation</span></div></div>
+    <p>These are <a href="https://github.com/mottopanikeiku/attention-numerics/tree/main/results/v2">CPU FP8 emulation results</a> across six small open models, not measurements of a FlashAttention-3 GPU kernel. Below, I separate an illustration of the mechanism from the measured heads.</p>
+    <nav aria-label="Page sections"><a href="#toy">Try the mechanism ↓</a><a href="#explorer">Explore the measurements ↓</a></nav>
+  </section>
+  <section id="toy" aria-labelledby="toy-title">
+    <p class="eyebrow">01 / Synthetic illustration</p><h2 id="toy-title">A shared key component should disappear</h2>
+    <p>I give four keys the same first coordinate. It adds the same constant to every attention score, so exact softmax cancels it. Move the slider: the exact weights stay fixed. After rotation spreads that common component across channels, coarse FP8 rounding can erase the small differences that softmax needs.</p>
+    <div class="card">
+      <div class="controls"><label class="slider" for="shared">Shared first coordinate: <output id="shared-value" for="shared">32</output><input id="shared" type="range" min="0" max="64" step="0.25" value="32"></label><label class="check"><input id="smooth" type="checkbox"> Subtract the mean key before rounding</label></div>
+      <div class="toy-layout"><div><h3>Attention weights</h3><div id="weights" role="img" aria-label="Attention weights for four synthetic keys"></div><p class="legend"><span class="exact">━ Exact</span><span class="plain">━ FP8 without rotation</span><span class="rotated">━ FP8 with rotation</span></p></div><div class="errors"><h3>Weight error</h3><p>Total variation: the fraction of attention mass moved.</p><dl><div><dt>Without rotation</dt><dd id="plain-error">—</dd></div><div><dt>With rotation</dt><dd id="rotated-error">—</dd></div></dl><p id="toy-description" aria-live="polite"></p></div></div>
+      <details><summary>See the vectors and the arithmetic</summary><p>One query, four keys, eight channels. Q and K each use one maximum-based FP8 scale. I apply a fixed random-sign Hadamard to both before rounding; the transform is orthogonal. E4M3FN uses round-to-nearest-even and saturation at ±448. Dot products and softmax use JavaScript numbers; Q/K scaling and conversion use float32.</p><p>This panel stops at attention weights: it does not round probabilities or values, model causal tiles, or reproduce the measured output errors below. Mean subtraction is before rotation and leaves exact attention unchanged.</p><div class="table-scroll"><table id="vectors"><caption>Key vectors before rounding and dequantized FP8 vectors</caption><thead><tr><th>Key</th><th>Original</th><th>FP8, no rotation</th><th>FP8, rotated coordinates</th></tr></thead><tbody></tbody></table></div></details>
+    </div>
+  </section>
+  <section id="explorer" aria-labelledby="explorer-title">
+    <p class="eyebrow">02 / Measured heads</p><h2 id="explorer-title">Could I predict which heads rotation would hurt?</h2>
+    <p>I fixed a rounding-noise predictor before loading three unseen models. Each point is one physical query head, averaged over three 1,024-token English texts. Both axes compare rotated against unrotated relative attention-output error: positive means rotation hurts; negative means it helps. The zero threshold was fixed, not tuned here.</p>
+    <div class="card">
+      <div class="controls filters"><label for="model">Model<select id="model"><option value="all">All six models</option></select></label><label for="layer">Layer<select id="layer"><option value="all">All layers</option></select></label><label for="group">Evaluation group<select id="group"><option value="all">All heads</option><option value="unseen">Three unseen models</option><option value="hurt">Observed harmed heads</option></select></label></div>
+      <p id="head-count" role="status">Loading the committed measurements…</p>
+      <div class="plot-layout"><div><svg id="plot" viewBox="0 0 680 510" role="img" aria-labelledby="plot-title plot-desc"><title id="plot-title">Predicted versus observed effect of rotation</title><desc id="plot-desc">Orange points have positive observed harm; blue points do not. Click a point to inspect it, or use the paginated table below.</desc></svg><p class="legend"><span class="rotated">● Rotation hurts</span><span class="plain">● Rotation helps or ties</span></p></div><aside id="inspection" aria-live="polite"><h3>Inspect a head</h3><p>Click a point or select a row below. The table provides a keyboard-accessible alternative to the plot.</p></aside></div>
+      <details><summary>What do these scores mean?</summary><p>For each text I take log(1 + relative Frobenius output error), average those values, then subtract the unrotated average from the rotated one. I do the same with the predictor's errors. These are differences of log-transformed errors, not error ratios or perplexity changes. The inspector converts the averaged log error back with exp(mean) − 1.</p><p>The predictor needs ideal attention outputs. It is a diagnostic, not a free runtime switch. Heads share layers and models: I do not treat 2,880 heads as independent experiments. AUC measures ranking, not calibration. OLMo has no harmed heads, so its own AUC is undefined.</p></details>
+      <h3>Inspect with the keyboard</h3><p>Rows are ordered by observed harm, largest first. Filters also apply to this table.</p><div class="table-scroll"><table id="head-table"><caption>Measured heads, 20 per page</caption><thead><tr><th>Model</th><th>Layer / head</th><th>Predicted score</th><th>Observed score</th><th>Inspect</th></tr></thead><tbody></tbody></table></div><div class="pagination"><button id="previous" type="button">Previous 20</button><span id="page-count"></span><button id="next" type="button">Next 20</button></div>
+    </div>
+  </section>
+  <section class="closing" aria-labelledby="takeaway"><h2 id="takeaway">Rotation is not always the right fix</h2><p>FlashAttention-3 rotates Q and K to spread outliers before FP8 rounding. My results show a failure mode: a large shared vector can look like an outlier, yet its exact score contribution cancels. Spreading it can make token-specific differences harder to represent. Subtracting the mean key is a different intervention; in Qwen2.5-0.5B it brought the rotated perplexity ratio from 1.91× to 1.06×.</p><p>I tested six small models and three texts with CPU emulation. These results do not establish the size of this effect in an actual FP8 GPU implementation or in larger models. <a href="https://github.com/mottopanikeiku/attention-numerics">Read the study, limitations and reproduction commands</a>.</p><p>Built on <a href="https://arxiv.org/abs/2407.08608">FlashAttention-3</a> and <a href="https://arxiv.org/abs/2410.02367">SageAttention</a>. <a href="https://github.com/mottopanikeiku/attention-numerics/blob/main/site/export.py">Data export</a> · <a href="https://github.com/mottopanikeiku/attention-numerics/blob/main/site/test.mjs">FP8 parity tests</a>.</p></section>
+</main>
+<footer>Alp Cetin · Written with AI coding assistance.</footer>
+<noscript><p>This explorable needs JavaScript for its controls. The <a href="https://github.com/mottopanikeiku/attention-numerics">full study and static figures</a> do not.</p></noscript>
+</body>
+</html>
