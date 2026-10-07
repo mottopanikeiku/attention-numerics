@@ -1,0 +1,11 @@
+{
+  "mode": "cleanup",
+  "removed_publisher_bytes": {
+    "qwen05": 999602607,
+    "qwen15": 3098971928,
+    "qwen3": 6183463416,
+    "qwen7": 15242805751,
+    "mistral7": 28995461154,
+    "olmo7": 29204222334
+  }
+}

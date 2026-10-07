@@ -1,0 +1,55 @@
+{
+  "mode": "full",
+  "sizing": {
+    "qwen14": {
+      "items_per_variant": 5172,
+      "execution": {
+        "bf16": {
+          "batches": 357,
+          "input_tokens": 1759308,
+          "calls_per_batch": 0,
+          "all_layer_call_order_checked": false,
+          "elapsed_seconds_for_sizing": 105.017008853,
+          "token_budget": 65536
+        },
+        "tile": {
+          "batches": 357,
+          "input_tokens": 1759308,
+          "calls_per_batch": 48,
+          "all_layer_call_order_checked": true,
+          "elapsed_seconds_for_sizing": 132.018007012,
+          "token_budget": 65536
+        },
+        "rotate": {
+          "batches": 357,
+          "input_tokens": 1759308,
+          "calls_per_batch": 48,
+          "all_layer_call_order_checked": true,
+          "elapsed_seconds_for_sizing": 213.900172613,
+          "token_budget": 65536
+        },
+        "smooth_k": {
+          "batches": 357,
+          "input_tokens": 1759308,
+          "calls_per_batch": 48,
+          "all_layer_call_order_checked": true,
+          "elapsed_seconds_for_sizing": 138.27372579300004,
+          "token_budget": 65536
+        },
+        "rotate_smooth_k": {
+          "batches": 357,
+          "input_tokens": 1759308,
+          "calls_per_batch": 48,
+          "all_layer_call_order_checked": true,
+          "elapsed_seconds_for_sizing": 222.4681323000001,
+          "token_budget": 65536
+        }
+      },
+      "total_elapsed_seconds_for_sizing": 835.570728265,
+      "full_input_tokens_per_variant": 1759308
+    }
+  },
+  "plan_sha256": "0fb0b9541a37575772e8b2848aaf64c06e684037443f54be54c015aaf936d28e",
+  "item_manifest_sha256": "c6e424668137fee31d143d729b9f9d14e73257804c1daf2ad2fb14f2f642ab8c",
+  "volume": "attention-numerics-day-models"
+}

@@ -1,0 +1,461 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "baseline": "bf16",
+  "difference_units": "accuracy fraction; multiply by 100 for percentage points",
+  "interval_method": "paired item percentile bootstrap via exact multinomial categories",
+  "bootstrap": {
+    "replicates": 20000,
+    "seed": 20261007,
+    "interval": 0.95,
+    "unit": "paired items",
+    "method": "percentile interval of with-replacement item resampling; paired -1/0/+1 counts are sufficient and may be resampled multinomially"
+  },
+  "harm_rule": {
+    "minimum_drop": 0.02,
+    "interval_upper_below": 0,
+    "definition": "variant accuracy minus BF16 <= -0.02 and the upper endpoint of its paired 95% interval < 0"
+  },
+  "primary_metrics": {
+    "arc_challenge": "acc_norm",
+    "hellaswag": "acc_norm",
+    "mmlu": "acc"
+  },
+  "denominators": {
+    "arc_challenge": 1172,
+    "hellaswag": 2000,
+    "mmlu": 2000
+  },
+  "sample_limitations": [
+    "Zero-shot standard harness prompts, without chat templates; not a chat evaluation.",
+    "ARC-Challenge uses its full test split; HellaSwag and MMLU use fixed 2,000-item samples, uniform and subject-stratified respectively, not their full test populations.",
+    "Intervals resample these items, not models, hardware, prompts or dataset selection.",
+    "No multiple-comparison correction; harm flags are not confirmatory population proof.",
+    "These multiple-choice results do not measure generation quality or perplexity.",
+    "Full-sequence quantization scales and key means can use later tokens; these are batch multiple-choice scores, not streaming-generation measurements."
+  ],
+  "rows": [
+    {
+      "denominator": 1172,
+      "baseline_accuracy": 0.47440273037542663,
+      "accuracy": 0.47440273037542663,
+      "delta": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "beneficial": 0,
+      "harmed": 0,
+      "tied": 1172,
+      "model": "smol17",
+      "revision": "effd688a12921b4cc83e3312b6feb579f70f9c71",
+      "task": "arc_challenge",
+      "variant": "bf16",
+      "primary_metric": "acc_norm",
+      "bootstrap_seed": 226986821304375937234851198624731679458,
+      "harm_flag": false
+    },
+    {
+      "denominator": 1172,
+      "baseline_accuracy": 0.47440273037542663,
+      "accuracy": 0.4598976109215017,
+      "delta": -0.014505119453924915,
+      "ci95": [
+        -0.026450511945392493,
+        -0.0034129692832764505
+      ],
+      "beneficial": 16,
+      "harmed": 33,
+      "tied": 1123,
+      "model": "smol17",
+      "revision": "effd688a12921b4cc83e3312b6feb579f70f9c71",
+      "task": "arc_challenge",
+      "variant": "tile",
+      "primary_metric": "acc_norm",
+      "bootstrap_seed": 150114557208832365148915111925537981744,
+      "harm_flag": false
+    },
+    {
+      "denominator": 1172,
+      "baseline_accuracy": 0.47440273037542663,
+      "accuracy": 0.4684300341296928,
+      "delta": -0.005972696245733789,
+      "ci95": [
+        -0.016211604095563138,
+        0.004266211604095563
+      ],
+      "beneficial": 14,
+      "harmed": 21,
+      "tied": 1137,
+      "model": "smol17",
+      "revision": "effd688a12921b4cc83e3312b6feb579f70f9c71",
+      "task": "arc_challenge",
+      "variant": "rotate",
+      "primary_metric": "acc_norm",
+      "bootstrap_seed": 115626064013336415638659894884245473439,
+      "harm_flag": false
+    },
+    {
+      "denominator": 1172,
+      "baseline_accuracy": 0.47440273037542663,
+      "accuracy": 0.46245733788395904,
+      "delta": -0.011945392491467578,
+      "ci95": [
+        -0.023890784982935155,
+        0.0
+      ],
+      "beneficial": 17,
+      "harmed": 31,
+      "tied": 1124,
+      "model": "smol17",
+      "revision": "effd688a12921b4cc83e3312b6feb579f70f9c71",
+      "task": "arc_challenge",
+      "variant": "smooth_k",
+      "primary_metric": "acc_norm",
+      "bootstrap_seed": 30727294584810397794629641222783366079,
+      "harm_flag": false
+    },
+    {
+      "denominator": 1172,
+      "baseline_accuracy": 0.47440273037542663,
+      "accuracy": 0.4684300341296928,
+      "delta": -0.005972696245733789,
+      "ci95": [
+        -0.015358361774744027,
+        0.0034129692832764505
+      ],
+      "beneficial": 11,
+      "harmed": 18,
+      "tied": 1143,
+      "model": "smol17",
+      "revision": "effd688a12921b4cc83e3312b6feb579f70f9c71",
+      "task": "arc_challenge",
+      "variant": "rotate_smooth_k",
+      "primary_metric": "acc_norm",
+      "bootstrap_seed": 260420455528682716054194332205619576713,
+      "harm_flag": false
+    },
+    {
+      "denominator": 2000,
+      "baseline_accuracy": 0.7295,
+      "accuracy": 0.7295,
+      "delta": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "beneficial": 0,
+      "harmed": 0,
+      "tied": 2000,
+      "model": "smol17",
+      "revision": "effd688a12921b4cc83e3312b6feb579f70f9c71",
+      "task": "hellaswag",
+      "variant": "bf16",
+      "primary_metric": "acc_norm",
+      "bootstrap_seed": 266140893443137590726732581634552373439,
+      "harm_flag": false
+    },
+    {
+      "denominator": 2000,
+      "baseline_accuracy": 0.7295,
+      "accuracy": 0.7245,
+      "delta": -0.005,
+      "ci95": [
+        -0.0105,
+        0.0005
+      ],
+      "beneficial": 10,
+      "harmed": 20,
+      "tied": 1970,
+      "model": "smol17",
+      "revision": "effd688a12921b4cc83e3312b6feb579f70f9c71",
+      "task": "hellaswag",
+      "variant": "tile",
+      "primary_metric": "acc_norm",
+      "bootstrap_seed": 264876854041725313888690996468371216529,
+      "harm_flag": false
+    },
+    {
+      "denominator": 2000,
+      "baseline_accuracy": 0.7295,
+      "accuracy": 0.7285,
+      "delta": -0.001,
+      "ci95": [
+        -0.006,
+        0.004
+      ],
+      "beneficial": 12,
+      "harmed": 14,
+      "tied": 1974,
+      "model": "smol17",
+      "revision": "effd688a12921b4cc83e3312b6feb579f70f9c71",
+      "task": "hellaswag",
+      "variant": "rotate",
+      "primary_metric": "acc_norm",
+      "bootstrap_seed": 114558320001022297373326040095562618812,
+      "harm_flag": false
+    },
+    {
+      "denominator": 2000,
+      "baseline_accuracy": 0.7295,
+      "accuracy": 0.7275,
+      "delta": -0.002,
+      "ci95": [
+        -0.008,
+        0.004
+      ],
+      "beneficial": 18,
+      "harmed": 22,
+      "tied": 1960,
+      "model": "smol17",
+      "revision": "effd688a12921b4cc83e3312b6feb579f70f9c71",
+      "task": "hellaswag",
+      "variant": "smooth_k",
+      "primary_metric": "acc_norm",
+      "bootstrap_seed": 86757005711967365346873623695791202441,
+      "harm_flag": false
+    },
+    {
+      "denominator": 2000,
+      "baseline_accuracy": 0.7295,
+      "accuracy": 0.728,
+      "delta": -0.0015,
+      "ci95": [
+        -0.0065,
+        0.0035
+      ],
+      "beneficial": 12,
+      "harmed": 15,
+      "tied": 1973,
+      "model": "smol17",
+      "revision": "effd688a12921b4cc83e3312b6feb579f70f9c71",
+      "task": "hellaswag",
+      "variant": "rotate_smooth_k",
+      "primary_metric": "acc_norm",
+      "bootstrap_seed": 185124691024984769734464925611061639406,
+      "harm_flag": false
+    },
+    {
+      "denominator": 2000,
+      "baseline_accuracy": 0.486,
+      "accuracy": 0.486,
+      "delta": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "beneficial": 0,
+      "harmed": 0,
+      "tied": 2000,
+      "model": "smol17",
+      "revision": "effd688a12921b4cc83e3312b6feb579f70f9c71",
+      "task": "mmlu",
+      "variant": "bf16",
+      "primary_metric": "acc",
+      "bootstrap_seed": 211235537567985414665077655499079752321,
+      "harm_flag": false
+    },
+    {
+      "denominator": 2000,
+      "baseline_accuracy": 0.486,
+      "accuracy": 0.4705,
+      "delta": -0.0155,
+      "ci95": [
+        -0.028,
+        -0.003
+      ],
+      "beneficial": 65,
+      "harmed": 96,
+      "tied": 1839,
+      "model": "smol17",
+      "revision": "effd688a12921b4cc83e3312b6feb579f70f9c71",
+      "task": "mmlu",
+      "variant": "tile",
+      "primary_metric": "acc",
+      "bootstrap_seed": 1425304443564884938535728157322733805,
+      "harm_flag": false
+    },
+    {
+      "denominator": 2000,
+      "baseline_accuracy": 0.486,
+      "accuracy": 0.4875,
+      "delta": 0.0015,
+      "ci95": [
+        -0.008,
+        0.0115
+      ],
+      "beneficial": 50,
+      "harmed": 47,
+      "tied": 1903,
+      "model": "smol17",
+      "revision": "effd688a12921b4cc83e3312b6feb579f70f9c71",
+      "task": "mmlu",
+      "variant": "rotate",
+      "primary_metric": "acc",
+      "bootstrap_seed": 77565290172398669824465780706802699857,
+      "harm_flag": false
+    },
+    {
+      "denominator": 2000,
+      "baseline_accuracy": 0.486,
+      "accuracy": 0.487,
+      "delta": 0.001,
+      "ci95": [
+        -0.01,
+        0.012
+      ],
+      "beneficial": 63,
+      "harmed": 61,
+      "tied": 1876,
+      "model": "smol17",
+      "revision": "effd688a12921b4cc83e3312b6feb579f70f9c71",
+      "task": "mmlu",
+      "variant": "smooth_k",
+      "primary_metric": "acc",
+      "bootstrap_seed": 192140654559066808672607060346670092384,
+      "harm_flag": false
+    },
+    {
+      "denominator": 2000,
+      "baseline_accuracy": 0.486,
+      "accuracy": 0.4805,
+      "delta": -0.0055,
+      "ci95": [
+        -0.0155,
+        0.004
+      ],
+      "beneficial": 46,
+      "harmed": 57,
+      "tied": 1897,
+      "model": "smol17",
+      "revision": "effd688a12921b4cc83e3312b6feb579f70f9c71",
+      "task": "mmlu",
+      "variant": "rotate_smooth_k",
+      "primary_metric": "acc",
+      "bootstrap_seed": 331250992684140062675766321940486763572,
+      "harm_flag": false
+    }
+  ],
+  "plan_sha256": "600971b16c492deb28a7624e4dc4b1756cc122118f11579c90134ee060db0388",
+  "item_manifest_sha256": "c6e424668137fee31d143d729b9f9d14e73257804c1daf2ad2fb14f2f642ab8c",
+  "primary_evidence": [
+    {
+      "model": "smol17",
+      "path": "smol17.json.gz",
+      "sha256": "76cc85cd63034e3ddb722613d683ea14f95c274ee06df8b03e68c5592a54869f",
+      "runtime": {
+        "torch": "2.9.1+cu128",
+        "cuda": "12.8",
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "capability": [
+          9,
+          0
+        ],
+        "python": "3.11.5",
+        "tf32": false,
+        "bf16_reduced_precision_reduction": false,
+        "scoring": "native BF16 vocabulary projection; FP32 logsumexp; FP64 ordered token sum",
+        "batching": "same exact sequence length, no padding, causal, no KV cache",
+        "elapsed_interpretation": "sizing and cost only; not a latency benchmark"
+      },
+      "adapter": {
+        "adapter": "fa3",
+        "repo_id": "kernels-community/flash-attn3",
+        "requested_version": 1,
+        "recipe_revision": "7cb368cf8278b583132eb72cbf312d54586df2e2",
+        "recipe_build_variant": "torch-stable-abi29-cu128-x86_64-linux",
+        "packages": {
+          "torch": "2.9.1+cu128",
+          "kernels": null,
+          "huggingface-hub": "0.36.2"
+        },
+        "loaded": {
+          "module": "_flash_attn3_cuda_8a730d9",
+          "module_file": "/opt/fa3/build/torch-stable-abi29-cu128-x86_64-linux/__init__.py",
+          "api_module": "_flash_attn3_cuda_8a730d9.flash_attn_interface",
+          "metadata": {
+            "name": "flash-attn3",
+            "id": "_flash_attn3_cuda_8a730d9",
+            "version": 1,
+            "license": "BSD-3-Clause",
+            "python-depends": [],
+            "backend": {
+              "type": "cuda",
+              "archs": [
+                "8.0",
+                "9.0a"
+              ]
+            },
+            "digest": {
+              "algorithm": "sha256",
+              "files": {
+                "__init__.py": "KXVmQJM+KhWc2UqWJesupCaP+mqAvTx7yGueFATglHE=",
+                "_flash_attn3_cuda_8a730d9.abi3.so": "58UQOCI0ULSEGpePiKDSvUH02rwiGNOV7Nqh7jxzamg=",
+                "_ops.py": "IB37k3QlN7IQi8rLoaWXzh4VROcbFVi4jSfLdb9Ew+w=",
+                "flash_attn3/__init__.py": "DFYPlrhXwYjEqCl/8n0SmWGZV8NFml5DPhMjKfv98GY=",
+                "flash_attn_config.py": "uxo+eyMcDit//8YDaS4Rtk5BTMKzTSK9tOKTjdWVe/w=",
+                "flash_attn_interface.py": "y0bD2JYGMFgX6iDre3zJN2sBPuq/12N6Mo55Z+HQCNQ="
+              }
+            },
+            "provenance": {
+              "kernel-builder": {
+                "version": "0.17.0-dev0",
+                "sha": "81580bb92577f2f7228661ca2a221fc052375709",
+                "dirty": false
+              },
+              "kernel": {
+                "sha": "8a730d96c37560ccf1d3e09f7bbccdc886818f33",
+                "dirty": false
+              }
+            }
+          },
+          "extension_files": [
+            "_flash_attn3_cuda_8a730d9.abi3.so"
+          ],
+          "metadata_digest_status": "publisher-declared; not rehashed at runtime"
+        },
+        "api": "flash_attn_func",
+        "input_dtype": "bfloat16",
+        "kernel_dtype": "float8_e4m3fn",
+        "output_dtype": "bfloat16",
+        "input_layout": "B,H,N,D",
+        "kernel_layout": "B,N,H,D",
+        "quantization": {
+          "max_code": 448.0,
+          "scales": "independent Q/K/V amax/448 per batch and expanded head over full N,D",
+          "zero_scale": 1.0,
+          "descale_shape": "B,Hq after GQA expansion (API requires B,Hkv)",
+          "rounding": "torch FP32-to-E4M3 cast after explicit [-448,448] clamp",
+          "emulator_q32_kv128": false
+        },
+        "accumulation": {
+          "qk": "E4M3 GMMA with float accumulator registers",
+          "softmax": "FP32 online recurrence, exp2 with max offset8",
+          "pv": "E4M3 unnormalized exp*256 and E4M3 V GMMA; float O registers rescaled across native tiles",
+          "normalization": "FP32 pre-E4M3-cast probability sum; V descale at finalize",
+          "ieee_fp32_tensor_core_rounding_claim": false,
+          "internal_probability_diagnostics": "not exposed"
+        },
+        "settings": {
+          "causal": true,
+          "num_splits": 1,
+          "pack_gqa": false,
+          "return_attn_probs": false
+        },
+        "variants": [
+          "tile",
+          "rotate",
+          "smooth_k",
+          "rotate_smooth_k"
+        ],
+        "smoothing": "external K centering in FP64 before FP32; before optional shared FWHT; V untouched",
+        "hardware": "Hopper sm90 only; D multiple16, D<=256",
+        "sources": [
+          "https://huggingface.co/kernels/kernels-community/flash-attn3",
+          "https://github.com/huggingface/kernels-community/tree/8a730d96c37560ccf1d3e09f7bbccdc886818f33/flash-attn3"
+        ]
+      },
+      "plan_sha256": "600971b16c492deb28a7624e4dc4b1756cc122118f11579c90134ee060db0388"
+    }
+  ]
+}

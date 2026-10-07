@@ -196,3 +196,136 @@ Elapsed records size the paid experiments and bound their cost, not benchmark la
 - [Pinned FA3 build metadata and digests](https://huggingface.co/kernels/kernels-community/flash-attn3/raw/7cb368cf8278b583132eb72cbf312d54586df2e2/build/torch-stable-abi29-cu128-x86_64-linux/metadata.json), [public API](https://huggingface.co/kernels/kernels-community/flash-attn3/raw/7cb368cf8278b583132eb72cbf312d54586df2e2/build/torch-stable-abi29-cu128-x86_64-linux/flash_attn_interface.py), [source accumulation](https://github.com/huggingface/kernels-community/tree/8a730d96c37560ccf1d3e09f7bbccdc886818f33/flash-attn3).
 - [Pinned Sage2.2.0 source](https://github.com/thu-ml/SageAttention/tree/eb615cf6cf4d221338033340ee2de1c37fbdba4a), [API and native smoothing](https://github.com/thu-ml/SageAttention/blob/eb615cf6cf4d221338033340ee2de1c37fbdba4a/sageattention/core.py), [tensor-core precision](https://github.com/thu-ml/SageAttention/blob/eb615cf6cf4d221338033340ee2de1c37fbdba4a/csrc/mma.cuh).
 - [FA3 paper](https://arxiv.org/abs/2407.08608), [SageAttention](https://arxiv.org/abs/2410.02367), [SageAttention2](https://arxiv.org/abs/2411.10958); the earlier [prior-work notes](PRIOR_WORK.md) distinguish their arithmetic from uniform E4.
+
+## Fixed-item multiple-choice accuracy
+
+The [plan](../data/accuracy/plan.json) was published in
+[3f3d929](https://github.com/mottopanikeiku/attention-numerics/tree/3f3d929/data/accuracy)
+before accuracy outcomes. Every selected item ID and rendered prompt was published
+in [dcefbf2](https://github.com/mottopanikeiku/attention-numerics/tree/dcefbf2/data/accuracy)
+before the first GPU accuracy pilot. [Selection](../data/accuracy/selection.json)
+and [compressed items](../data/accuracy/items.json.gz) record the full 1,172-item
+ARC-Challenge test, fixed uniform 2,000-item HellaSwag validation sample and fixed
+proportional, subject-stratified 2,000-item MMLU test sample. Seed is 20261007;
+largest-remainder ties use alphabetical subject order, and subject seeds are
+SHA256-derived. HellaSwag activity `ind` values are not unique: item identities
+use pinned validation row indices, retaining original raw-row hashes.
+
+### Standard prompts and scoring
+
+I independently reproduce the pinned
+[lm-evaluation-harness v0.4.9.2](https://github.com/EleutherAI/lm-evaluation-harness/tree/ad3f4d0cad1cfcdb815f1e795f7947e49ed9f2e9)
+task definitions, not a new prompt benchmark. [data.py](../study/accuracy/data.py)
+links the ARC YAML, HellaSwag preprocessing, MMLU description/template,
+multiple-choice metric and HF token-pair sources. These are zero-shot raw
+prompts, without a chat template. ARC/HellaSwag use character-normalized
+continuation log-likelihood (`acc_norm`); MMLU scores A–D label likelihood
+without normalization (`acc`). The denominator is Python `len(choice)`, excluding
+the target space delimiter. Exact ties select the first choice.
+
+Tokenization follows the harness's joint context/continuation encoding, moving
+context trailing whitespace to the continuation. `add_bos_token=None` retains
+each pinned tokenizer's native special-token default; it is not blanket no-BOS.
+Unsupported token-boundary merges or overlength items raise, rather than
+silently replacing or truncating test items. Models use exactly equal input
+lengths within a batch, with no padding or attention-mask loss. Forward input
+excludes the final continuation target; raw sequence length is therefore
+context tokens + continuation tokens − 1.
+
+The native backbone, norms, projections, RoPE and MLP stay GPU BF16. I apply the
+same published FA3 E4M3 API and four transforms used above in every attention
+layer, against matched GPU BF16 SDPA. Each nonbaseline forward checks exactly
+one call in each layer. The native positionwise vocabulary projection is
+computed only at continuation prediction positions; FP32 logsumexp and ordered
+FP64 token sums give choice scores. This is full-batch teacher-forced choice
+scoring, not generation: full-sequence key means/scales can depend on later
+candidate tokens.
+
+### Paired analysis
+
+The primary measure is variant accuracy minus BF16 accuracy on identical items.
+I use 20,000 deterministic paired bootstrap resamples and a percentile 95%
+interval. Resampling counts of the paired item differences (−1, 0, +1) is
+distributionally equivalent to resampling items, without a large replicate-by-item
+array. A variant meets the fixed harm rule only for a drop of at least 2
+percentage points **and** an upper interval endpoint below zero. All planned
+model/task/variant comparisons are reported; intervals are not familywise
+multiple-comparison corrections or universal-model guarantees.
+
+### Models, licenses and cloud stages
+
+The six pinned checkpoints and publisher file hashes are in
+[models.json](../data/accuracy/models.json). Qwen2.5-3B-Instruct uses the
+[Qwen RESEARCH license](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct/blob/aa8e72537993ba99e69dfaafa59ed015b17504d1/LICENSE):
+noncommercial research/evaluation only, not Apache-2.0. The other Qwens,
+Mistral-7B-v0.3 and OLMo-2-1124-7B use Apache-2.0. The latter two are base
+checkpoints; accuracy changes are within-model comparisons, not a controlled
+claim about absolute family quality.
+
+Use the locked Modal SDK from Python 3.12/3.13, not a system Python 3.14 client.
+[`modal_app.py`](../study/accuracy/modal_app.py) has CPU-only `weights`, `prepare`
+and `tokens` modes, then H100 `pilot` and `full`. The private Volume
+`attention-numerics-day-models` holds publisher checkpoints and CPU-tokenized
+fixed choices; GPU runs use only local files and never download weights.
+`ATTENTION_MINUTES`, `ATTENTION_CORES` and `ATTENTION_MEM_GIB` must match the
+intended allocation; each function has the actual timeout and one container.
+Completed model/variant units are committed inside the function and matching
+reruns skip them, so completed results survive a client drop.
+
+```sh
+uv sync --locked --extra capture --extra hardware --python 3.13
+ATTENTION_GPU=none ATTENTION_MINUTES=20 uv run modal run study/accuracy/modal_app.py --mode weights --output data/accuracy
+ATTENTION_GPU=none ATTENTION_MINUTES=10 uv run modal run study/accuracy/modal_app.py --mode prepare --output data/accuracy
+ATTENTION_GPU=none ATTENTION_MINUTES=10 uv run modal run study/accuracy/modal_app.py --mode tokens --output data/accuracy
+ATTENTION_GPU=H100 ATTENTION_MINUTES=5 uv run modal run study/accuracy/modal_app.py --mode pilot --pilot-items 8 --token-budget 65536 --output results/accuracy
+ATTENTION_GPU=H100 ATTENTION_MINUTES=55 uv run modal run study/accuracy/modal_app.py --mode full --token-budget 65536 --output results/accuracy
+uv run python -m study.accuracy.report
+```
+
+Pilot timings size the allocation and cost, not kernel latency. Full raw item
+records are compressed and committed; the reporter rejects missing or duplicate
+coverage, changed hashes/tokenization, invalid normalized scores or wrong argmax.
+
+### Larger-model extension
+
+The optional [14B plan](../data/accuracy/qwen14-plan.json) was selected from the
+completed 7B run's time and remaining compute, before inspecting task accuracy.
+It names one pinned Apache-2.0 Qwen2.5-14B-Instruct checkpoint and repeats the
+original tasks, IDs, scoring, variants and statistical rules unchanged. Its
+separate hash preserves the original six-model plan and raw provenance.
+
+```sh
+ATTENTION_GPU=none ATTENTION_MINUTES=10 uv run modal run study/accuracy/modal_app.py --mode weights --plan qwen14-plan.json --output data/accuracy/qwen14
+ATTENTION_GPU=none ATTENTION_MINUTES=10 uv run modal run study/accuracy/modal_app.py --mode tokens --plan qwen14-plan.json --output data/accuracy/qwen14
+ATTENTION_GPU=H100 ATTENTION_MINUTES=18 uv run modal run study/accuracy/modal_app.py --mode full --plan qwen14-plan.json --token-budget 65536 --output results/accuracy/qwen14
+uv run python -m study.accuracy.report --additional-plan data/accuracy/qwen14-plan.json
+```
+
+Each extra plan gets its own Volume subdirectory, so preparing its tokens cannot
+invalidate the original six-model run or its resumable completed units. The
+reporter includes an additional plan only when its parent hash matches and its
+task/scoring/kernel/statistical settings match exactly; it validates that plan's
+complete raw output before combining the figure. Exact known pilot filenames
+are ignored, but unknown full-run files are rejected.
+
+After collecting all GPU results, CPU-only `--mode cleanup` removes that plan's
+downloaded checkpoint directories and reports the removed publisher-file bytes.
+Tokenized choices, hashes and completed raw results stay in the Volume; a fresh
+GPU measurement requires `weights` again, while collecting an already completed
+unit does not. This avoids retaining large paid-storage copies. Run it separately
+for each measured plan, never during an active run.
+
+### Fourth-family extension
+
+The remaining compute also supported the pinned Apache-2.0 base checkpoint
+[SmolLM2-1.7B](../data/accuracy/smol17-plan.json), chosen without inspecting its
+task accuracy. It uses the same original plan hash, item IDs and rules as the
+14B extension, in a different Volume namespace. Publisher hashes are in its
+[model manifest](../data/accuracy/smol17/models.json).
+
+```sh
+ATTENTION_GPU=none ATTENTION_MINUTES=3 uv run modal run study/accuracy/modal_app.py --mode weights --plan smol17-plan.json --output data/accuracy/smol17
+ATTENTION_GPU=none ATTENTION_MINUTES=3 uv run modal run study/accuracy/modal_app.py --mode tokens --plan smol17-plan.json --output data/accuracy/smol17
+ATTENTION_GPU=H100 ATTENTION_MINUTES=6 uv run modal run study/accuracy/modal_app.py --mode full --plan smol17-plan.json --token-budget 65536 --output results/accuracy/smol17
+uv run python -m study.accuracy.report --additional-plan data/accuracy/qwen14-plan.json --additional-plan data/accuracy/smol17-plan.json
+```

@@ -1,0 +1,19 @@
+{
+  "mode": "tokens",
+  "manifest": {
+    "plan_sha256": "0fb0b9541a37575772e8b2848aaf64c06e684037443f54be54c015aaf936d28e",
+    "item_manifest_sha256": "c6e424668137fee31d143d729b9f9d14e73257804c1daf2ad2fb14f2f642ab8c",
+    "models": {
+      "qwen14": {
+        "sha256": "e98a5bbf2da7811bb3aa91a1f2846f180a97542137995f7eaa8466ce07487339",
+        "bytes": 1337336,
+        "choices": 20687,
+        "input_tokens_per_variant": 1759308,
+        "maximum_sequence_length": 998,
+        "tokenizer_class": "Qwen2TokenizerFast",
+        "bos_token_id": null,
+        "special_tokens": "tokenizer-native default, as harness add_bos_token=None"
+      }
+    }
+  }
+}

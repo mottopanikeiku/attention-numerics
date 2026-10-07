@@ -120,3 +120,56 @@ differ together. Private operand access, enriched non-Qwen sampling,
 future-token-dependent batch preprocessing and FA3-only downstream evaluation
 remain explicit limitations. The README does not equate Sage's high AUC with
 useful zero-threshold precision or claim a latency benchmark.
+
+## Fixed-item task accuracy: implementation and methods
+
+Two independent read-only reviews on `openai-codex/gpt-6.1-sol:high` covered the
+new scorer and statistical design. They did not run tests, builds, linters,
+formatters, models or paid experiments, and their source review is not
+independent GPU validation.
+
+The numerical reviewer found no actionable defect. It checked joint
+context/continuation tokenization, native BOS defaults, prediction positions and
+exclusion of the final target from model input, continuation-only native BF16
+vocabulary projection, FP32 normalization and ordered FP64 token sums. It
+checked the actual Transformers 4.57.6 Qwen/Mistral/OLMo2 attention sources:
+intercepting their native SDPA call preserves projections, RoPE, OLMo2 Q/K norms
+and GQA, while exact-length batches preserve causal masking without padding.
+It also checked local-files-only loading and completed-unit persistence.
+
+The methods reviewer independently confirmed the 5,172 unique item IDs, source
+revisions, uniform HellaSwag sample, proportional 57-subject MMLU allocation and
+compressed manifest hash. It traced prompts, character normalization, MMLU
+letter choices and BOS handling to pinned lm-evaluation-harness sources, and
+checked paired multinomial bootstrap intervals and the fixed harm rule.
+
+Two P2 findings were corrected: known pilot outputs can coexist with full-run
+files without hiding missing or unknown full outputs; and the original
+six-model reproduction command no longer requires optional 14B results before
+the later instructions create them. A focused static recheck confirmed the
+pilot fix. The extension review confirmed independent plan-specific storage,
+unchanged original plan/items, separate raw plan hashes, parent/settings checks
+and all 84 nonbaseline comparisons. The targeted regression run passed 89
+tests, including extension-parent, changed-task and duplicate-model rejection.
+
+The final two read-only reviews found no remaining actionable defects. The
+methods reviewer independently matched all eight raw-file hashes, 206,880
+per-item records, every one of the 120 summary rows and bootstrap seeds/intervals,
+all README baseline/flag counts, the −35.40pp Qwen7 HellaSwag interval and the
+smaller −1.50pp centered Qwen1.5 MMLU loss. It confirmed all 96 cells of the
+readable 288,006-byte vector figure and the 16-run $4.7701 compute-bound sum.
+
+The runtime reviewer checked all eight recorded H100 sm90 runs, zero nonfinite
+scores and `N = context_tokens + choice_token_count − 1` throughout. Each raw
+file contains the pinned native module and a `FlashAttnFwdSm90` CUDA kernel
+instantiated with `cutlass::float_e4m3_t`, plus the expected checked layer order
+for every nonbaseline batch. Profiler traces cover one captured tile batch per
+checkpoint, not separate traces of every variant/batch. A focused pinned-source
+review also checked SmolLM2's Llama dispatch, BOS ID zero, tied output weights,
+24-layer D=64 geometry and lack of sliding masking.
+
+Neither final reviewer reran a GPU experiment or used a browser, and these
+checks do not independently reproduce the hardware outcomes. Base versus
+Instruct checkpoints, noncommercial Qwen3B licensing, fixed samples, uncorrected
+itemwise intervals and future-token-dependent batch preprocessing remain
+explicit. No new-model risk forecast was fitted.

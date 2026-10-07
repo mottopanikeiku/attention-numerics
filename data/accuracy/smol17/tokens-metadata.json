@@ -1,0 +1,19 @@
+{
+  "mode": "tokens",
+  "manifest": {
+    "plan_sha256": "600971b16c492deb28a7624e4dc4b1756cc122118f11579c90134ee060db0388",
+    "item_manifest_sha256": "c6e424668137fee31d143d729b9f9d14e73257804c1daf2ad2fb14f2f642ab8c",
+    "models": {
+      "smol17": {
+        "sha256": "2b4458ee4206993f42c26c56d79a4cfbc21294e5ac3b7255604d25ac6f7b938a",
+        "bytes": 1302215,
+        "choices": 20687,
+        "input_tokens_per_variant": 1806031,
+        "maximum_sequence_length": 1033,
+        "tokenizer_class": "GPT2TokenizerFast",
+        "bos_token_id": 0,
+        "special_tokens": "tokenizer-native default, as harness add_bos_token=None"
+      }
+    }
+  }
+}
