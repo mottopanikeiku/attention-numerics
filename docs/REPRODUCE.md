@@ -277,11 +277,32 @@ uv sync --locked --extra capture --extra hardware --python 3.13
 ATTENTION_GPU=none ATTENTION_MINUTES=20 uv run modal run study/accuracy/modal_app.py --mode weights --output data/accuracy
 ATTENTION_GPU=none ATTENTION_MINUTES=10 uv run modal run study/accuracy/modal_app.py --mode prepare --output data/accuracy
 ATTENTION_GPU=none ATTENTION_MINUTES=10 uv run modal run study/accuracy/modal_app.py --mode tokens --output data/accuracy
-ATTENTION_GPU=H100 ATTENTION_MINUTES=5 uv run modal run study/accuracy/modal_app.py --mode pilot --pilot-items 2 --output results/accuracy
-ATTENTION_GPU=H100 ATTENTION_MINUTES=55 uv run modal run study/accuracy/modal_app.py --mode full --output results/accuracy
-uv run python -m study.accuracy.report
+ATTENTION_GPU=H100 ATTENTION_MINUTES=5 uv run modal run study/accuracy/modal_app.py --mode pilot --pilot-items 8 --token-budget 65536 --output results/accuracy
+ATTENTION_GPU=H100 ATTENTION_MINUTES=55 uv run modal run study/accuracy/modal_app.py --mode full --token-budget 65536 --output results/accuracy
+uv run python -m study.accuracy.report --additional-plan data/accuracy/qwen14-plan.json
 ```
 
 Pilot timings size the allocation and cost, not kernel latency. Full raw item
 records are compressed and committed; the reporter rejects missing or duplicate
 coverage, changed hashes/tokenization, invalid normalized scores or wrong argmax.
+
+### Larger-model extension
+
+The optional [14B plan](../data/accuracy/qwen14-plan.json) was selected from the
+completed 7B run's time and remaining compute, before inspecting task accuracy.
+It names one pinned Apache-2.0 Qwen2.5-14B-Instruct checkpoint and repeats the
+original tasks, IDs, scoring, variants and statistical rules unchanged. Its
+separate hash preserves the original six-model plan and raw provenance.
+
+```sh
+ATTENTION_GPU=none ATTENTION_MINUTES=10 uv run modal run study/accuracy/modal_app.py --mode weights --plan qwen14-plan.json --output data/accuracy/qwen14
+ATTENTION_GPU=none ATTENTION_MINUTES=10 uv run modal run study/accuracy/modal_app.py --mode tokens --plan qwen14-plan.json --output data/accuracy/qwen14
+ATTENTION_GPU=H100 ATTENTION_MINUTES=20 uv run modal run study/accuracy/modal_app.py --mode full --plan qwen14-plan.json --token-budget 65536 --output results/accuracy/qwen14
+```
+
+Each extra plan gets its own Volume subdirectory, so preparing its tokens cannot
+invalidate the original six-model run or its resumable completed units. The
+reporter includes an additional plan only when its parent hash matches and its
+task/scoring/kernel/statistical settings match exactly; it validates that plan's
+complete raw output before combining the figure. Exact known pilot filenames
+are ignored, but unknown full-run files are rejected.

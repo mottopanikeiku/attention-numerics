@@ -45,7 +45,11 @@ def validate_plan(plan):
     """Use the committed plan, never infer coverage from the available runs."""
     _require(isinstance(plan, dict), "Plan must be an object")
     models = plan.get("models")
-    _require(isinstance(models, list) and len(models) == 6, "Plan needs six models")
+    count = plan.get("planned_model_count", 6)
+    _require(
+        _integer(count, 1) and isinstance(models, list) and len(models) == count,
+        f"Plan needs {count} planned models",
+    )
     keys = []
     for model in models:
         _require(isinstance(model, dict), "Plan model must be an object")
@@ -401,7 +405,7 @@ def _load(path, compressed=False):
     return json.loads(payload), hashlib.sha256(raw).hexdigest()
 
 
-def build_report(results_dir, plan_path, items_path):
+def build_report(results_dir, plan_path, items_path, additional_plans=()):
     """Write summary and figure only after every planned raw file passes validation."""
     results_dir = Path(results_dir)
     plan, plan_hash = _load(plan_path)
@@ -409,7 +413,10 @@ def build_report(results_dir, plan_path, items_path):
     validate_plan(plan)
     items = validate_manifest(plan, manifest)
     expected_files = {f"{model['key']}.json.gz" for model in plan["models"]}
-    actual_files = {path.name for path in results_dir.glob("*.json.gz")}
+    pilot_files = {f"pilot-{model['key']}.json.gz" for model in plan["models"]}
+    actual_files = {
+        path.name for path in results_dir.glob("*.json.gz") if path.name not in pilot_files
+    }
     _require(
         actual_files == expected_files,
         f"Incomplete model file coverage: missing {sorted(expected_files - actual_files)}, "
@@ -427,12 +434,49 @@ def build_report(results_dir, plan_path, items_path):
                 "sha256": raw_hash,
                 "runtime": run["runtime"],
                 "adapter": run["adapter"],
+                "plan_sha256": plan_hash,
             }
         )
     summary = summarize(plan, items, runs)
     summary.update(
         {"plan_sha256": plan_hash, "item_manifest_sha256": items_hash, "primary_evidence": evidence}
     )
+    for additional_path in additional_plans:
+        additional, additional_hash = _load(additional_path)
+        _require(
+            additional.get("extends_plan_sha256") == plan_hash,
+            "Additional plan must explicitly extend the original plan hash",
+        )
+        for field in (
+            "variants",
+            "tasks",
+            "sample_seed",
+            "special_tokens",
+            "harness",
+            "scoring",
+            "bootstrap",
+            "harm_rule",
+            "kernel",
+            "item_manifest",
+        ):
+            _require(additional.get(field) == plan.get(field), f"Additional plan changed {field}")
+        subdirectory = additional.get("results_subdirectory")
+        _require(
+            isinstance(subdirectory, str)
+            and subdirectory not in ("", ".", "..")
+            and Path(subdirectory).name == subdirectory,
+            "Additional plan must name its result subdirectory",
+        )
+        extra = build_report(results_dir / subdirectory, additional_path, items_path)
+        existing_models = {row["model"] for row in summary["rows"]}
+        extra_models = {row["model"] for row in extra["rows"]}
+        _require(existing_models.isdisjoint(extra_models), "Repeated model across plans")
+        summary["rows"].extend(extra["rows"])
+        for entry in extra["primary_evidence"]:
+            summary["primary_evidence"].append({**entry, "path": f"{subdirectory}/{entry['path']}"})
+        summary.setdefault("additional_plans", []).append(
+            {"path": Path(additional_path).name, "sha256": additional_hash}
+        )
     figure = paired_figure(summary)
     _require(len(figure.encode()) < 400000, "Paired change figure exceeds 400KB")
     payload = json.dumps(summary, indent=2, allow_nan=False) + "\n"
@@ -446,9 +490,10 @@ def main():
     parser.add_argument("--results-dir", type=Path, default=ROOT / "results" / "accuracy")
     parser.add_argument("--plan", type=Path, default=ROOT / "data" / "accuracy" / "plan.json")
     parser.add_argument("--items", type=Path, default=ROOT / "data" / "accuracy" / "items.json.gz")
+    parser.add_argument("--additional-plan", type=Path, action="append", default=[])
     args = parser.parse_args()
     try:
-        build_report(args.results_dir, args.plan, args.items)
+        build_report(args.results_dir, args.plan, args.items, args.additional_plan)
     except (ValueError, OSError) as error:
         parser.error(str(error))
 

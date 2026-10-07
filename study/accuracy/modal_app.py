@@ -75,10 +75,12 @@ def _digest(path):
     max_containers=1,
     volumes={"/volume": volume},
 )
-def experiment(mode="weights", models="", token_budget=16384, pilot_items=8):
+def experiment(mode="weights", models="", token_budget=16384, pilot_items=8, plan="plan.json"):
     import time
 
-    plan = json.loads(Path("/project/data/accuracy/plan.json").read_text())
+    plan_path = Path("/project/data/accuracy") / plan
+    volume_path = Path("/volume") if plan == "plan.json" else Path("/volume") / plan_path.stem
+    plan = json.loads(plan_path.read_text())
     selected = models.split(",") if models else [entry["key"] for entry in plan["models"]]
     if any(key not in {entry["key"] for entry in plan["models"]} for key in selected):
         raise ValueError("Model selection is not in the published plan")
@@ -92,7 +94,7 @@ def experiment(mode="weights", models="", token_budget=16384, pilot_items=8):
         for entry in plan["models"]:
             if entry["key"] not in selected:
                 continue
-            target = Path("/volume/checkpoints") / entry["key"]
+            target = volume_path / "checkpoints" / entry["key"]
             snapshot_download(
                 entry["repo_id"],
                 revision=entry["revision"],
@@ -121,7 +123,7 @@ def experiment(mode="weights", models="", token_budget=16384, pilot_items=8):
             records[entry["key"]] = {
                 "repo_id": entry["repo_id"],
                 "revision": entry["revision"],
-                "directory": f"checkpoints/{entry['key']}",
+                "directory": str(target.relative_to("/volume")),
                 "license": entry["license"],
                 "head_dimension": dim,
                 "layers": config["num_hidden_layers"],
@@ -138,7 +140,7 @@ def experiment(mode="weights", models="", token_budget=16384, pilot_items=8):
             "volume": "attention-numerics-day-models",
             "elapsed_seconds_for_sizing": time.monotonic() - started,
         }
-        Path("/volume/models.json").write_text(json.dumps(manifest, indent=2) + "\n")
+        (volume_path / "models.json").write_text(json.dumps(manifest, indent=2) + "\n")
         volume.commit()
         return json.dumps({"mode": mode, "manifest": manifest}, allow_nan=False)
     if mode == "prepare":
@@ -167,9 +169,9 @@ def experiment(mode="weights", models="", token_budget=16384, pilot_items=8):
         from study.accuracy.worker import prepare_tokens
 
         metadata = prepare_tokens(
-            Path("/project/data/accuracy/plan.json"),
+            plan_path,
             Path("/project/data/accuracy/items.json.gz"),
-            Path("/volume"),
+            volume_path,
         )
         volume.commit()
         return json.dumps({"mode": mode, "manifest": metadata}, allow_nan=False)
@@ -178,9 +180,9 @@ def experiment(mode="weights", models="", token_budget=16384, pilot_items=8):
     from study.accuracy.worker import run
 
     result = run(
-        Path("/project/data/accuracy/plan.json"),
+        plan_path,
         Path("/project/data/accuracy/items.json.gz"),
-        Path("/volume"),
+        volume_path,
         selected,
         pilot=mode == "pilot",
         pilot_items=pilot_items,
@@ -197,13 +199,15 @@ def main(
     models: str = "",
     token_budget: int = 16384,
     pilot_items: int = 8,
+    plan: str = "plan.json",
 ):
-    result = json.loads(experiment.remote(mode, models, token_budget, pilot_items))
+    result = json.loads(experiment.remote(mode, models, token_budget, pilot_items, plan))
     destination = Path(output)
     destination.mkdir(parents=True, exist_ok=True)
     for name, encoded in result.pop("files", {}).items():
         (destination / name).write_bytes(base64.b64decode(encoded))
-    (destination / f"{mode}-metadata.json").write_text(json.dumps(result, indent=2) + "\n")
     if mode == "weights":
         (destination / "models.json").write_text(json.dumps(result["manifest"], indent=2) + "\n")
+    elif mode != "prepare":
+        (destination / f"{mode}-metadata.json").write_text(json.dumps(result, indent=2) + "\n")
     print(f"Saved {mode} records to {destination}")

@@ -338,6 +338,62 @@ def test_build_report_preserves_raw_evidence_and_publishes_complete_outputs(tmp_
         assert (results / evidence["path"]).read_bytes() == before[evidence["path"]]
 
 
+def test_known_pilot_namespace_coexists_but_unknown_full_files_are_rejected(tmp_path, frozen):
+    results, plan, items = write_artifacts(tmp_path, frozen)
+    (results / "pilot-qwen7.json.gz").write_bytes(
+        gzip.compress(json.dumps({"mode": "pilot", "rows": []}).encode(), mtime=0)
+    )
+    summary = build_report(results, plan, items)
+    assert len(summary["primary_evidence"]) == 6
+    (results / "unexpected.json.gz").write_bytes(gzip.compress(b"{}", mtime=0))
+    with pytest.raises(ValueError, match="extra"):
+        build_report(results, plan, items)
+
+
+@pytest.mark.parametrize("mismatch", [None, "parent", "tasks", "duplicate"])
+def test_additional_plan_preserves_original_plan_and_rejects_design_changes(
+    tmp_path, frozen, mismatch
+):
+    results, plan_path, items = write_artifacts(tmp_path, frozen)
+    plan, _, runs = frozen
+    before = {path.name: path.read_bytes() for path in results.glob("*.json.gz")}
+    extension = copy.deepcopy(plan)
+    extra_key = "qwen05" if mismatch == "duplicate" else "qwen14"
+    extension["models"] = [{**plan["models"][0], "key": extra_key}]
+    extension.update(
+        planned_model_count=1,
+        extends_plan_sha256=hashlib.sha256(plan_path.read_bytes()).hexdigest(),
+        results_subdirectory="qwen14",
+    )
+    if mismatch == "parent":
+        extension["extends_plan_sha256"] = "f" * 64
+    elif mismatch == "tasks":
+        extension["tasks"]["arc_challenge"]["count"] += 1
+    extension_path = tmp_path / "qwen14-plan.json"
+    extension_path.write_text(json.dumps(extension))
+    extra_run = copy.deepcopy(runs["qwen05"])
+    extra_run["model"] = extra_key
+    extra_run["plan_sha256"] = hashlib.sha256(extension_path.read_bytes()).hexdigest()
+    for row in extra_run["rows"]:
+        row["model"] = extra_key
+    (results / "qwen14").mkdir()
+    (results / "qwen14" / f"{extra_key}.json.gz").write_bytes(
+        gzip.compress(json.dumps(extra_run).encode(), mtime=0)
+    )
+    if mismatch:
+        with pytest.raises(ValueError):
+            build_report(results, plan_path, items, [extension_path])
+        assert not (results / "summary.json").exists()
+        return
+    summary = build_report(results, plan_path, items, [extension_path])
+    assert len(summary["rows"]) == 105
+    assert len(summary["primary_evidence"]) == 7
+    assert summary["primary_evidence"][-1]["path"] == "qwen14/qwen14.json.gz"
+    assert summary["additional_plans"][0]["sha256"] == extra_run["plan_sha256"]
+    for name, raw in before.items():
+        assert (results / name).read_bytes() == raw
+
+
 def test_missing_model_file_never_publishes_partial_summary(tmp_path, frozen):
     results, plan, items = write_artifacts(tmp_path, frozen)
     (results / "olmo7.json.gz").unlink()
