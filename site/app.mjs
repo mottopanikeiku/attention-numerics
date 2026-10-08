@@ -13,7 +13,7 @@ function updateToy() {
   const shared = Number($('#shared').value), smooth = $('#smooth').checked;
   $('#shared-value').value = shared;
   const data = toy(shared, smooth);
-  $('#weights').innerHTML = data.exact.map((_, i) => `<div class="weight-row"><span>Key ${i + 1}</span><div class="bars">${[['exact', 'Exact'], ['plain', 'FP8 without rotation'], ['rotated', 'FP8 with rotation']].map(([field, label]) => `<div class="bar ${field}"><span style="width:${data[field][i] * 80}%"></span><span>${percent(data[field][i])}</span><span class="sr-label" hidden>${label}</span></div>`).join('')}</div></div>`).join('');
+  $('#weights').innerHTML = data.exact.map((_, i) => `<div class="weight-row"><span>Key ${i + 1}</span><div class="bars">${['exact', 'plain', 'rotated'].map(field => `<div class="bar ${field}"><span style="width:${data[field][i] * 80}%"></span><span>${percent(data[field][i])}</span></div>`).join('')}</div></div>`).join('');
   $('#weights').setAttribute('aria-label', data.exact.map((_, i) => `Key ${i + 1}: exact ${percent(data.exact[i])}, FP8 without rotation ${percent(data.plain[i])}, with rotation ${percent(data.rotated[i])}`).join('; '));
   $('#plain-error').textContent = percent(data.plainTV);
   $('#rotated-error').textContent = percent(data.rotatedTV);
