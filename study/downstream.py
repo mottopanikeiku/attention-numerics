@@ -28,7 +28,7 @@ def combine(cache, destination):
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary = destination.with_suffix(".tmp.csv")
     with temporary.open("w", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=FIELDS)
+        writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(records)
     temporary.replace(destination)
@@ -135,7 +135,7 @@ def score(key, cache, results_dir=ROOT / "results/v2", vocab_chunk=1024):
     target = cache / key / "downstream/metrics.csv"
     temporary = target.with_suffix(".tmp.csv")
     with temporary.open("w", newline="") as output:
-        writer = csv.DictWriter(output, fieldnames=FIELDS)
+        writer = csv.DictWriter(output, fieldnames=FIELDS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(records)
     temporary.replace(target)

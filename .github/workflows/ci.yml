@@ -7,19 +7,24 @@ permissions:
 jobs:
   tests:
     runs-on: ubuntu-latest
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
           version: "0.12.5"
       - run: uv sync --locked --extra capture --python 3.13
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest -q
-        env:
-          OPENBLAS_NUM_THREADS: "1"
-          OMP_NUM_THREADS: "1"
       - run: uv run python sweep.py --study smoke --seeds 3 --output /tmp/attention-smoke
-        env:
-          OPENBLAS_NUM_THREADS: "1"
-          OMP_NUM_THREADS: "1"
+      - name: Regenerate committed reports from committed records
+        run: |
+          uv run python -m study.accuracy.report --additional-plan data/accuracy/qwen14-plan.json --additional-plan data/accuracy/smol17-plan.json
+          uv run python -m study.hardware.report
+          uv run python -m study.classification
+          uv run python -m study.report --results-dir results/v2
+          uv run python figures.py
+          git diff --exit-code -- results ':!results/machine.json'

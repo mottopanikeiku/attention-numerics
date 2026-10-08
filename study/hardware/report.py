@@ -217,7 +217,7 @@ def summarize_downstream(run):
 
 
 def draw(points_by_backend, destination):
-    plt.rcParams["svg.fonttype"] = "none"
+    plt.rcParams.update({"svg.fonttype": "none", "svg.hashsalt": "hardware"})
     figure, axes = plt.subplots(2, 2, figsize=(12, 8.4))
     markers = {"tile": "o", "rotate": "^", "smooth_k": "s", "rotate_smooth_k": "x"}
     for row, backend in enumerate(("fa3", "sage")):
@@ -305,7 +305,7 @@ def draw(points_by_backend, destination):
         fontsize=9,
     )
     figure.tight_layout(rect=(0, 0.045, 1, 0.96))
-    figure.savefig(destination, dpi=150)
+    figure.savefig(destination, dpi=150, metadata={"Date": None})
     plt.close(figure)
 
 
@@ -409,7 +409,7 @@ def write_report(results_dir):
             for kind in ("emulator", "hardware")
             for variant in VARIANTS
         ]
-        writer = csv.DictWriter(handle, fields)
+        writer = csv.DictWriter(handle, fields, lineterminator="\n")
         writer.writeheader()
         for backend, points in points_by_backend.items():
             for point in points:
