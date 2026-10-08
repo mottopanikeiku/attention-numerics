@@ -73,7 +73,9 @@ def main(path, destination):
                             **metrics(actual, expected),
                         }
                         if writer is None:
-                            writer = csv.DictWriter(stream, fieldnames=list(entry))
+                            writer = csv.DictWriter(
+                                stream, fieldnames=list(entry), lineterminator="\n"
+                            )
                             writer.writeheader()
                         writer.writerow(entry)
                         stream.flush()

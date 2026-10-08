@@ -143,7 +143,7 @@ def evaluate(q, k, v, names):
 
 def write_csv(path, entries):
     with path.open("w", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=list(entries[0]))
+        writer = csv.DictWriter(stream, fieldnames=list(entries[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(entries)
 

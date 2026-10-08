@@ -197,7 +197,7 @@ def run(study, destination, seeds):
                         **{f"cfg_{key}": value for key, value in asdict(cfg).items()},
                     }
                     if writer is None:
-                        writer = csv.DictWriter(stream, fieldnames=list(entry))
+                        writer = csv.DictWriter(stream, fieldnames=list(entry), lineterminator="\n")
                         writer.writeheader()
                     writer.writerow(entry)
                     stream.flush()
@@ -220,7 +220,9 @@ def dot_study(destination, seeds):
     destination.mkdir(parents=True, exist_ok=True)
     with (destination / "dots.csv").open("w", newline="") as stream:
         writer = csv.DictWriter(
-            stream, fieldnames=["k", "seed", "variant", "max_abs", "relative_frobenius"]
+            stream,
+            fieldnames=["k", "seed", "variant", "max_abs", "relative_frobenius"],
+            lineterminator="\n",
         )
         writer.writeheader()
         for size in [64, 128, 512, 4096, 16384, 65536]:
@@ -256,6 +258,7 @@ def denominator_study(destination):
         writer = csv.DictWriter(
             stream,
             fieldnames=["n", "tile", "variant", "actual", "exact", "max_abs", "relative_frobenius"],
+            lineterminator="\n",
         )
         writer.writeheader()
         for n in [1024, 4096, 16384, 65536]:
