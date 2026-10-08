@@ -1,6 +1,10 @@
 """Validate complete multiple-choice runs and report paired accuracy changes.
 
-python -m study.accuracy.report --results-dir results/accuracy
+Rebuild the committed eight-checkpoint summary; omitting an extension plan drops its rows:
+
+python -m study.accuracy.report
+    --additional-plan data/accuracy/qwen14-plan.json
+    --additional-plan data/accuracy/smol17-plan.json
 """
 
 import argparse
