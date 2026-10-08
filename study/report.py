@@ -301,6 +301,7 @@ def draw_figures(points, downstream, results_dir):
     colors = {model: COLORS[index % len(COLORS)] for index, model in enumerate(models)}
     with plt.rc_context(
         {
+            "svg.hashsalt": "attention-numerics-v2",
             "svg.fonttype": "none",
             "font.size": 10,
             "axes.spines.top": False,
