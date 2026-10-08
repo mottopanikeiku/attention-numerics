@@ -138,6 +138,15 @@ def study_cases(study):
         raise ValueError(f"unknown study {study}")
 
 
+def cpu_model(cpuinfo=Path("/proc/cpuinfo")):
+    """x86 Linux names the CPU in /proc/cpuinfo; ARM Linux and macOS do not."""
+    if cpuinfo.is_file():
+        for line in cpuinfo.read_text().splitlines():
+            if line.startswith("model name"):
+                return line.split(":", 1)[1].strip()
+    return platform.processor() or platform.machine()
+
+
 def environment():
     return {
         "python": sys.version,
@@ -145,11 +154,7 @@ def environment():
         "ml_dtypes": ml_dtypes.__version__,
         "platform": platform.platform(),
         "machine": platform.machine(),
-        "cpu": next(
-            line.split(":", 1)[1].strip()
-            for line in Path("/proc/cpuinfo").read_text().splitlines()
-            if line.startswith("model name")
-        ),
+        "cpu": cpu_model(),
         "numpy_build": np.__config__.show(mode="dicts"),
         "threads": {
             name: os.getenv(name)
