@@ -18,6 +18,8 @@
     <p class="eyebrow">A rounding problem, not a rotation problem</p>
     <h1 id="title">When rotation hurts attention</h1>
     <p class="lede">Rotation preserves dot products. Rounding does not. I measured what happens when the two meet in low-precision attention.</p>
+    <p class="kernel-result"><strong>Real FlashAttention-3 (FA3)</strong><br><span id="accuracy-result">I compare FP8 answer accuracy against BF16.</span> <a href="https://github.com/mottopanikeiku/attention-numerics#answer-accuracy">Answer-accuracy study →</a></p>
+    <p class="eyebrow">Earlier CPU FP8 emulation</p>
     <div class="stats"><div><strong>250 / 2,880</strong><span>heads made less accurate</span></div><div><strong>0.978 AUC</strong><span>prediction on three unseen models</span></div><div><strong>1.91×</strong><span>Qwen2.5-0.5B perplexity with rotation</span></div></div>
     <p>These are <a href="https://github.com/mottopanikeiku/attention-numerics/tree/main/results/v2">CPU FP8 emulation results</a> across six small open models, not measurements of a FlashAttention-3 GPU kernel. Below, I separate an illustration of the mechanism from the measured heads.</p>
     <nav aria-label="Page sections"><a href="#toy">Try the mechanism ↓</a><a href="#explorer">Explore the measurements ↓</a></nav>

@@ -3,7 +3,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    paths: ['site/**', '.github/workflows/pages.yml', 'results/v2/heads.csv', 'attention.py']
+    paths: ['site/**', '.github/workflows/pages.yml', 'results/v2/heads.csv', 'results/accuracy/summary.json', 'attention.py']
   workflow_dispatch:
 permissions:
   contents: read
@@ -28,7 +28,8 @@ jobs:
       - name: Prepare static files
         run: |
           mkdir -p _site
-          cp site/index.html site/style.css site/app.mjs site/numerics.mjs site/heads.json _site/
+          cp site/index.html site/style.css site/app.mjs site/numerics.mjs site/accuracy.mjs site/heads.json _site/
+          cp results/accuracy/summary.json _site/accuracy.json
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: _site

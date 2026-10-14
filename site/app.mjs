@@ -1,4 +1,5 @@
 import { toy } from './numerics.mjs';
+import { accuracySummary } from './accuracy.mjs';
 const $ = selector => document.querySelector(selector);
 const names = { qwen05: 'Qwen2.5-0.5B', qwen15: 'Qwen2.5-1.5B', smol036: 'SmolLM2-360M', smol17: 'SmolLM2-1.7B', tiny11: 'TinyLlama-1.1B', olmo1: 'OLMo-2-1B' };
 const unseen = new Set(['smol17', 'tiny11', 'olmo1']);
@@ -101,6 +102,13 @@ $('#head-table').addEventListener('click', event => {
 });
 $('#previous').addEventListener('click', () => { page--; renderTable(); });
 $('#next').addEventListener('click', () => { page++; renderTable(); });
+try {
+  const response = await fetch(new URL('./accuracy.json', import.meta.url));
+  if (!response.ok) throw new Error(`Data request failed: ${response.status}`);
+  $('#accuracy-result').textContent = accuracySummary(await response.json());
+} catch {
+  $('#accuracy-result').textContent = 'I could not load the accuracy measurements. The linked study has the committed results.';
+}
 try {
   const response = await fetch(new URL('./heads.json', import.meta.url));
   if (!response.ok) throw new Error(`Data request failed: ${response.status}`);
