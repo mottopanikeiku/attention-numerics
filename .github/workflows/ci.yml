@@ -27,4 +27,6 @@ jobs:
           uv run python -m study.classification
           uv run python -m study.report --results-dir results/v2
           uv run python figures.py
+          uv run python -m study.same_numbers results/hardware/summary.json
+          git checkout -- results/hardware/summary.json
           git diff --exit-code -- results ':!results/machine.json'
