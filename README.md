@@ -2,6 +2,8 @@
 
 I measure how FP8 attention changes multiple-choice answers.
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/hero-dark.svg"><img alt="Qwen2.5-7B HellaSwag accuracy with FlashAttention-3 on one H100: 80.9% BF16, 63.7% FP8, 45.5% FP8 with rotated queries and keys, 81.0% when the keys are also centered." src="docs/hero-light.svg" width="600"></picture>
+
 **Question:** Does rotating queries and keys before rounding hurt answer accuracy, and does centering keys first help?
 
 **Result:** On Qwen2.5-7B HellaSwag, I measure **80.90% with BF16** → **63.70% with plain FP8 (`tile`, unrotated FA3)** → **45.50% with rotated FP8**. With keys centered, with or without rotation, no checkpoint loses **2 percentage points or more** versus BF16; the worst change is **−1.50pp** on Qwen2.5-1.5B MMLU. [All measurements](results/accuracy/summary.json).
