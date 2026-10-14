@@ -10,7 +10,15 @@ uv run ruff check .
 uv run ruff format --check .
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run pytest -q
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run python sweep.py --study smoke --seeds 3 --output /tmp/attention-smoke
+uv run python -m study.accuracy.report --additional-plan data/accuracy/qwen14-plan.json --additional-plan data/accuracy/smol17-plan.json
+uv run python -m study.hardware.report
+uv run python -m study.classification
+uv run python -m study.report --results-dir results/v2
+uv run python figures.py
+git diff --exit-code -- results ':!results/machine.json'
 ```
+
+The last six commands rebuild the derived summaries, tables and figures from committed records on CPU and fail on any byte difference. `figures.py` rewrites `results/machine.json` with the current rendering environment, so that file is excluded. On ARM64 Linux a few real-kernel medians differ in the last floating-point digit; CI runs on x86-64.
 
 Tests include exact uniform attention/prefix means and a two-key logistic answer; independent dense float64 and slow scalar fp32/reduced14 references; FP8 representability/ties/saturation; rotation invariance; masked reverse traversal; sampled/full equality; promotion; and a denominator-only compensation example. They also check that key centering preserves the float64 reference under both masks and sampled/full rows, leaves Q uncentered, and that diagnostic logits reconstruct FP32 attention.
 

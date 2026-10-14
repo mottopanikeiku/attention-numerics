@@ -350,7 +350,7 @@ def summarize(studies):
             "relative_percent_max",
             "max_abs_median",
         ]
-        writer = csv.DictWriter(stream, fieldnames=fields)
+        writer = csv.DictWriter(stream, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         for entry in entries:
             if (
