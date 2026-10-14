@@ -40,10 +40,26 @@ def test_readme_accuracy_table_matches_summary():
 def test_readme_headline_changes_match_summary():
     readme = (ROOT / "README.md").read_text()
     rows = {(row["model"], row["task"], row["variant"]): row for row in _summary()}
-    rotate = rows[("qwen7", "hellaswag", "rotate")]
-    low, high = (_pp(value) for value in rotate["ci95"])
-    assert f"**{_pp(-rotate['delta'])} percentage points**" in readme
-    assert f"**[{low}, {high}]**" in readme
+    labels = (
+        ("bf16", "BF16"),
+        ("tile", "plain FP8 (`tile`, unrotated FA3)"),
+        ("rotate", "rotated FP8"),
+    )
+    accuracies = [
+        f"**{_pp(rows['qwen7', 'hellaswag', variant]['accuracy'])}% with {label}**"
+        for variant, label in labels
+    ]
+    assert "On Qwen2.5-7B HellaSwag, I measure " + " → ".join(accuracies) in readme
     centered = [row for row in rows.values() if row["variant"] in ("smooth_k", "rotate_smooth_k")]
-    assert sum(row["harm_flag"] for row in centered) == 0
-    assert f"**zero ≥2pp harm flags across {len(centered)} comparisons**" in readme
+    assert all(row["delta"] > -0.02 for row in centered)
+    assert (
+        "With keys centered, with or without rotation, no checkpoint loses "
+        "**2 percentage points or more** versus BF16"
+    ) in readme
+    worst = min(centered, key=lambda row: row["delta"])
+    assert (worst["model"], worst["task"], worst["variant"]) == ("qwen15", "mmlu", "smooth_k")
+    assert f"**{_pp(worst['delta'])}pp** on Qwen2.5-1.5B MMLU" in readme
+    assert (
+        "one H100, full-sequence per-head scales, and batch scoring "
+        "rather than streaming generation"
+    ) in readme

@@ -4,9 +4,16 @@ I measure how FP8 attention changes multiple-choice answers.
 
 **Question:** Does rotating queries and keys before rounding hurt answer accuracy, and does centering keys first help?
 
-Using published [FlashAttention-3](https://arxiv.org/abs/2407.08608) and pinned [lm-evaluation-harness prompts](docs/PRIOR_WORK.md#fixed-item-multiple-choice-evaluation), my [data preparation](study/accuracy/data.py) fixes the items, [scorer](study/accuracy/worker.py) changes attention in every layer, and [reporter](study/accuracy/report.py) pairs answers with native GPU BF16. Projections, RoPE, norms and MLP remain native.
+**Result:** On Qwen2.5-7B HellaSwag, I measure **80.90% with BF16** → **63.70% with plain FP8 (`tile`, unrotated FA3)** → **45.50% with rotated FP8**. With keys centered, with or without rotation, no checkpoint loses **2 percentage points or more** versus BF16; the worst change is **−1.50pp** on Qwen2.5-1.5B MMLU. [All measurements](results/accuracy/summary.json).
 
-**Result:** Rotation drops Qwen2.5-7B HellaSwag accuracy by **35.40 percentage points**, paired 95% CI **[−37.90, −32.90]**. Both centered variants have **zero ≥2pp harm flags across 48 comparisons**, but are not lossless. [All measurements](results/accuracy/summary.json).
+I used one H100, full-sequence per-head scales, and batch scoring rather than streaming generation.
+
+Recompute the table and figure from committed item records on CPU:
+
+```sh
+uv sync --locked --python 3.13
+uv run python -m study.accuracy.report --additional-plan data/accuracy/qwen14-plan.json --additional-plan data/accuracy/smol17-plan.json
+```
 
 [Interactive mechanism and earlier emulated-head study](https://mottopanikeiku.github.io/attention-numerics/).
 
@@ -27,9 +34,11 @@ The table gives BF16 accuracy percentages and the count of flagged FP8 compariso
 | OLMo-2-1124-7B | 57.17 | 81.25 | 59.50 | 0 |
 | SmolLM2-1.7B | 47.44 | 72.95 | 48.60 | 0 |
 
-The other three families are **base** checkpoints, so this is not a controlled ranking of family quality. Damage is not monotone with size: 7B Qwen is much worse than 14B here. Centering also leaves smaller losses: Qwen1.5B MMLU falls **1.50pp [−2.50, −0.50]** with `smooth_k`, below the chosen flag threshold.
+The other three families are **base** checkpoints, so this is not a controlled ranking of family quality. Damage is not monotone with size: 7B Qwen is much worse than 14B here.
 
 ![All 96 paired accuracy changes and 95% intervals; red cells meet the fixed harm rule](results/accuracy/paired-change.svg)
+
+Using published [FlashAttention-3](https://arxiv.org/abs/2407.08608) and pinned [lm-evaluation-harness prompts](docs/PRIOR_WORK.md#fixed-item-multiple-choice-evaluation), my [data preparation](study/accuracy/data.py) fixes the items, [scorer](study/accuracy/worker.py) changes attention in every layer, and [reporter](study/accuracy/report.py) pairs answers with native GPU BF16. Projections, RoPE, norms and MLP remain native.
 
 `tile` names unrotated FA3 with **full-sequence per-head scales**, not the earlier block-scaled emulator. `rotate` applies a shared signed Hadamard to Q/K; `smooth_k` subtracts the key mean; `rotate_smooth_k` does both. V is never rotated.
 
@@ -41,14 +50,7 @@ The earlier real-kernel study measured a **12.56× batch exp-CE ratio** for rota
 
 ## Reproduce
 
-Recompute the table and figure from committed compressed item records on CPU, with **$0 paid compute**:
-
-```sh
-uv sync --locked --python 3.13
-uv run python -m study.accuracy.report --additional-plan data/accuracy/qwen14-plan.json --additional-plan data/accuracy/smol17-plan.json
-```
-
-Repeating model scoring requires **H100 80GB** for the native FA3 FP8 API. CPU-only cloud stages download/hash weights and tokenize before GPU allocation. The complete new-study compute bound is **$4.77 including the failed preparation and pilot**, not an invoice; downloaded checkpoint copies were removed afterward. [Cost accounting](results/accuracy/cost.json); [full stages, licenses, methods and review](docs/REPRODUCE.md#fixed-item-multiple-choice-accuracy).
+Repeating model scoring requires **H100 80GB** for the native FA3 FP8 API. CPU-only cloud stages download/hash weights and tokenize before GPU allocation. The complete new-study compute bound is **$4.77 including the failed preparation and pilot**, not an invoice; downloaded checkpoint copies were removed afterward. [Cost accounting](results/accuracy/cost.json); [full stages, licenses and methods](docs/REPRODUCE.md#fixed-item-multiple-choice-accuracy).
 
 ## Limits and prior work
 
